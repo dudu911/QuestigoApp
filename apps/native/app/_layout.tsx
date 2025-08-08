@@ -1,7 +1,8 @@
-import { Stack } from "expo-router"
+import "react-native-reanimated";
+import { Stack } from "expo-router";
 
 const AppLayout = () => {
-  return <Stack />
-}
+  return <Stack />;
+};
 
-export default AppLayout
+export default AppLayout;

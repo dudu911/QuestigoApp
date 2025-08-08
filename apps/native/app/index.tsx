@@ -1,33 +1,47 @@
-import { StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { Button } from "@repo/ui";
+import { StyledView, StyledText, StyledButton, theme } from "@repo/ui";
 
 export default function Native() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Native</Text>
-      <Button
-        onClick={() => {
+    <StyledView
+      flex={1}
+      backgroundColor={theme.colors.white}
+      alignItems="center"
+      justifyContent="center"
+      padding="lg"
+      margin={0}
+      style={{}}
+    >
+      <StyledText size="4xl" fontWeight="bold" marginBottom="lg" style={{}}>
+        Native
+      </StyledText>
+      <StyledText
+        color={theme.colors.orange}
+        marginBottom="sm"
+        fontWeight="normal"
+        style={{}}
+      >
+        Hi (Orange via Universal Theme)
+      </StyledText>
+      <StyledText
+        color={theme.colors.navy}
+        marginBottom="lg"
+        fontWeight="normal"
+        style={{}}
+      >
+        Hi (Navy via Universal Theme)
+      </StyledText>
+      <StyledButton
+        variant="primary"
+        size="md"
+        onPress={() => {
           console.log("Pressed!");
           alert("Pressed!");
         }}
-        text="Boop"
-      />
+      >
+        Boop
+      </StyledButton>
       <StatusBar style="auto" />
-    </View>
+    </StyledView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  header: {
-    fontWeight: "bold",
-    marginBottom: 20,
-    fontSize: 36,
-  },
-});

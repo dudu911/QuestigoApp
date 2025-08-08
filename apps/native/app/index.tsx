@@ -1,5 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { StyledView, StyledText, StyledButton, theme } from "@repo/ui";
+import { TypesDemo } from "../components/TypesDemo";
 
 export default function Native() {
   return (
@@ -9,7 +10,6 @@ export default function Native() {
       alignItems="center"
       justifyContent="center"
       padding="lg"
-      margin={0}
       style={{}}
     >
       <StyledText size="4xl" fontWeight="bold" marginBottom="lg" style={{}}>
@@ -41,6 +41,9 @@ export default function Native() {
       >
         Boop
       </StyledButton>
+
+      <TypesDemo />
+
       <StatusBar style="auto" />
     </StyledView>
   );

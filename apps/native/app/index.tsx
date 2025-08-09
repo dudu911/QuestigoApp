@@ -1,9 +1,12 @@
 import { StatusBar } from "expo-status-bar";
-import { StyledView, StyledText, StyledButton, theme } from "@repo/ui";
+import { StyledView, StyledText, StyledButton, useTheme } from "@repo/ui";
 import { TypesDemo } from "../components/TypesDemo";
 import { ConfigDemo } from "../components/ConfigDemo";
+import { ProvidersDemo } from "../components/ProvidersDemo";
 
 export default function Native() {
+  const { theme } = useTheme();
+
   return (
     <StyledView
       flex={1}
@@ -42,6 +45,8 @@ export default function Native() {
       >
         Boop
       </StyledButton>
+
+      <ProvidersDemo />
 
       <TypesDemo />
 

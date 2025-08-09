@@ -1,0 +1,75 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close"
+  },
+  "navigation": {
+    "home": "Home",
+    "quests": "Quests",
+    "team": "Team",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "quest": {
+    "title": "Quests",
+    "active": "Active Quest",
+    "completed": "Completed",
+    "start": "Start Quest",
+    "finish": "Finish Quest",
+    "noActiveQuest": "No active quest",
+    "riddle": "Riddle",
+    "clue": "Clue",
+    "solution": "Solution",
+    "location": "Location",
+    "distance": "Distance",
+    "nearby": "You're nearby!",
+    "tooFar": "You're too far from the location"
+  },
+  "team": {
+    "title": "Team",
+    "code": "Team Code",
+    "members": "Members",
+    "joinTeam": "Join Team",
+    "createTeam": "Create Team",
+    "leaveTeam": "Leave Team",
+    "teamName": "Team Name",
+    "enterCode": "Enter team code",
+    "invalidCode": "Invalid team code",
+    "maxMembers": "Team is full (4 members max)"
+  },
+  "profile": {
+    "title": "Profile",
+    "username": "Username",
+    "email": "Email",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "avatar": "Avatar",
+    "statistics": "Statistics",
+    "questsCompleted": "Quests Completed",
+    "riddlesSolved": "Riddles Solved"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "notifications": "Notifications",
+    "location": "Location Services",
+    "privacy": "Privacy",
+    "about": "About",
+    "version": "Version",
+    "logout": "Logout"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "minLength": "Minimum {{count}} characters required",
+    "maxLength": "Maximum {{count}} characters allowed",
+    "passwordMismatch": "Passwords do not match"
+  }
+}

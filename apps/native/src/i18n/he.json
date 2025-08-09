@@ -1,0 +1,75 @@
+{
+  "common": {
+    "loading": "טוען...",
+    "error": "משהו השתבש",
+    "retry": "נסה שוב",
+    "cancel": "ביטול",
+    "confirm": "אישור",
+    "save": "שמור",
+    "edit": "ערוך",
+    "delete": "מחק",
+    "close": "סגור"
+  },
+  "navigation": {
+    "home": "בית",
+    "quests": "משימות",
+    "team": "צוות",
+    "profile": "פרופיל",
+    "settings": "הגדרות"
+  },
+  "quest": {
+    "title": "משימות",
+    "active": "משימה פעילה",
+    "completed": "הושלמו",
+    "start": "התחל משימה",
+    "finish": "סיים משימה",
+    "noActiveQuest": "אין משימה פעילה",
+    "riddle": "חידה",
+    "clue": "רמז",
+    "solution": "פתרון",
+    "location": "מיקום",
+    "distance": "מרחק",
+    "nearby": "אתה קרוב!",
+    "tooFar": "אתה רחוק מדי מהמיקום"
+  },
+  "team": {
+    "title": "צוות",
+    "code": "קוד צוות",
+    "members": "חברים",
+    "joinTeam": "הצטרף לצוות",
+    "createTeam": "צור צוות",
+    "leaveTeam": "עזוב צוות",
+    "teamName": "שם הצוות",
+    "enterCode": "הכנס קוד צוות",
+    "invalidCode": "קוד צוות לא תקין",
+    "maxMembers": "הצוות מלא (מקסימום 4 חברים)"
+  },
+  "profile": {
+    "title": "פרופיל",
+    "username": "שם משתמש",
+    "email": "אימייל",
+    "firstName": "שם פרטי",
+    "lastName": "שם משפחה",
+    "avatar": "תמונת פרופיל",
+    "statistics": "סטטיסטיקות",
+    "questsCompleted": "משימות שהושלמו",
+    "riddlesSolved": "חידות שנפתרו"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "language": "שפה",
+    "notifications": "התראות",
+    "location": "שירותי מיקום",
+    "privacy": "פרטיות",
+    "about": "אודות",
+    "version": "גרסה",
+    "logout": "התנתק"
+  },
+  "validation": {
+    "required": "שדה חובה",
+    "invalidEmail": "כתובת אימייל לא תקינה",
+    "minLength": "נדרשים לפחות {{count}} תווים",
+    "maxLength": "מותרים לכל היותר {{count}} תווים",
+    "passwordMismatch": "הסיסמאות אינן תואמות"
+  }
+}

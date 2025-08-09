@@ -44,6 +44,13 @@ pnpm build:web
 - **Navigation**: expo-router 4.0.21 (file-based routing)
 - **Animations**: react-native-reanimated 3.16.7
 - **Styling**: Universal styled components (@repo/ui)
+- **State Management**: Zustand 5.0.7 (lightweight state store)
+- **Data Fetching**: @tanstack/react-query 5.84.2
+- **Internationalization**: i18next 25.3.2 + react-i18next 15.6.1
+- **Localization**: expo-localization 16.1.6
+- **Safe Areas**: react-native-safe-area-context 4.12.0
+- **Types**: Shared types with Zod validation (@repo/types)
+- **Config**: Typed environment variables (@repo/config)
 - **TypeScript**: Full type safety with path mapping
 - **Bundler**: Metro with monorepo support
 
@@ -77,6 +84,51 @@ import { StyledView, StyledText, StyledButton } from "@repo/ui";
     Universal Button
   </StyledButton>
 </StyledView>
+```
+
+## App Providers
+
+The app is wrapped with multiple providers in `app/_layout.tsx`:
+
+```tsx
+import { QueryClientProvider } from '@tanstack/react-query';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { I18nextProvider } from 'react-i18next';
+import { ThemeProvider } from '@repo/ui';
+
+// App state management with Zustand
+import { useAppStore } from './src/state/useAppStore';
+
+// Global state includes:
+// - activeQuestId: Current quest being played
+// - teamCode: Team join code
+// - locale: App language (en/he)
+// - isOnline: Network status
+```
+
+### State Management
+
+```tsx
+import { useAppStore, useAppActions } from './src/state/useAppStore';
+
+// Access state
+const { activeQuestId, teamCode, locale } = useAppStore();
+
+// Update state
+const { setActiveQuestId, setTeamCode, setLocale } = useAppActions();
+```
+
+### Internationalization
+
+```tsx
+import { useTranslation } from 'react-i18next';
+
+const { t } = useTranslation();
+console.log(t('navigation.home')); // "Home" or "בית"
+
+// Change language
+import { changeLanguage } from './src/i18n';
+changeLanguage('he'); // Switch to Hebrew
 ```
 
 ## Navigation

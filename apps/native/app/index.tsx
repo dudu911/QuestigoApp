@@ -3,56 +3,53 @@ import { StyledView, StyledText, StyledButton, useTheme } from "@repo/ui";
 import { TypesDemo } from "../components/TypesDemo";
 import { ConfigDemo } from "../components/ConfigDemo";
 import { ProvidersDemo } from "../components/ProvidersDemo";
+import { Link } from "expo-router";
+import { ScrollView } from "react-native";
 
 export default function Native() {
   const { theme } = useTheme();
 
   return (
-    <StyledView
-      flex={1}
-      backgroundColor={theme.colors.white}
-      alignItems="center"
-      justifyContent="center"
-      padding="lg"
-      style={{}}
-    >
-      <StyledText size="4xl" fontWeight="bold" marginBottom="lg" style={{}}>
-        Native
-      </StyledText>
-      <StyledText
-        color={theme.colors.orange}
-        marginBottom="sm"
-        fontWeight="normal"
-        style={{}}
+    <ScrollView style={{ flex: 1, backgroundColor: theme.colors.white }}>
+      <StyledView
+        flex={1}
+        backgroundColor={theme.colors.white}
+        alignItems="center"
+        justifyContent="center"
+        padding="lg"
+        style={{ minHeight: 600 }}
       >
-        Hi (Orange via Universal Theme)
-      </StyledText>
-      <StyledText
-        color={theme.colors.navy}
-        marginBottom="lg"
-        fontWeight="normal"
-        style={{}}
-      >
-        Hi (Navy via Universal Theme)
-      </StyledText>
-      <StyledButton
-        variant="primary"
-        size="md"
-        onPress={() => {
-          console.log("Pressed!");
-          alert("Pressed!");
-        }}
-      >
-        Boop
-      </StyledButton>
-
-      <ProvidersDemo />
-
-      <TypesDemo />
-
-      <ConfigDemo />
-
-      <StatusBar style="auto" />
-    </StyledView>
+        <StyledText size="4xl" fontWeight="bold" marginBottom="lg" style={{}}>
+          Questigo
+        </StyledText>
+        <StyledText
+          color={theme.colors.orange}
+          marginBottom="sm"
+          fontWeight="normal"
+          style={{}}
+        >
+          Interactive Quest Adventure Game
+        </StyledText>
+        <StyledText
+          color={theme.colors.navy}
+          marginBottom="lg"
+          fontWeight="normal"
+          style={{}}
+        >
+          Explore, Solve, Discover
+        </StyledText>
+        <Link href="/(shell)/home" asChild>
+          <StyledButton style={{ backgroundColor: "#F49C00" }}>
+            <StyledText color="#FFFFFF" fontWeight="600">
+              Enter Game World
+            </StyledText>
+          </StyledButton>
+        </Link>
+        <ProvidersDemo />
+        <TypesDemo />
+        <ConfigDemo />
+        <StatusBar style="auto" />
+      </StyledView>
+    </ScrollView>
   );
 }

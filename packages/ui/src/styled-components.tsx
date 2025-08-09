@@ -88,41 +88,41 @@ interface StyledButtonProps extends PressableProps {
   size?: "sm" | "md" | "lg";
 }
 
-export const StyledButton: React.FC<StyledButtonProps> = ({
-  children,
-  variant = "primary",
-  size = "md",
-  ...props
-}) => {
-  const buttonStyle: ViewStyle = {
-    paddingHorizontal:
-      size === "sm"
-        ? theme.spacing.sm
-        : size === "lg"
-          ? theme.spacing.lg
-          : theme.spacing.md,
-    paddingVertical:
-      size === "sm"
-        ? theme.spacing.xs
-        : size === "lg"
-          ? theme.spacing.md
-          : theme.spacing.sm,
-    borderRadius: 8,
-    backgroundColor:
-      variant === "primary" ? theme.colors.orange : theme.colors.gray[200],
-    alignItems: "center",
-    justifyContent: "center",
-  };
+export const StyledButton = React.forwardRef<View, StyledButtonProps>(
+  ({ children, variant = "primary", size = "md", ...props }, ref) => {
+    const buttonStyle: ViewStyle = {
+      paddingHorizontal:
+        size === "sm"
+          ? theme.spacing.sm
+          : size === "lg"
+            ? theme.spacing.lg
+            : theme.spacing.md,
+      paddingVertical:
+        size === "sm"
+          ? theme.spacing.xs
+          : size === "lg"
+            ? theme.spacing.md
+            : theme.spacing.sm,
+      borderRadius: 8,
+      backgroundColor:
+        variant === "primary" ? theme.colors.orange : theme.colors.gray[200],
+      alignItems: "center",
+      justifyContent: "center",
+    };
 
-  const textStyle: TextStyle = {
-    color: variant === "primary" ? theme.colors.white : theme.colors.gray[800],
-    fontSize: theme.typography.base,
-    fontWeight: "600",
-  };
+    const textStyle: TextStyle = {
+      color:
+        variant === "primary" ? theme.colors.white : theme.colors.gray[800],
+      fontSize: theme.typography.base,
+      fontWeight: "600",
+    };
 
-  return (
-    <Pressable style={buttonStyle} {...props}>
-      <Text style={textStyle}>{children}</Text>
-    </Pressable>
-  );
-};
+    return (
+      <Pressable ref={ref} style={buttonStyle} {...props}>
+        <Text style={textStyle}>{children}</Text>
+      </Pressable>
+    );
+  },
+);
+
+StyledButton.displayName = "StyledButton";

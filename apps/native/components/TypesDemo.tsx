@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { StyledView, StyledText, StyledButton, theme } from "@repo/ui";
-import {
-  UserSchema,
-  CreateUserSchema,
-  type User,
-  type CreateUser,
-  z,
-} from "@repo/types";
+import { CreateUserSchema, type CreateUser, z } from "@repo/types";
 
 export function TypesDemo() {
   const [validationResult, setValidationResult] = useState<string>("");
@@ -26,7 +20,7 @@ export function TypesDemo() {
     lastName: "Doe",
   };
 
-  const validateUser = (data: unknown, isValid: boolean) => {
+  const validateUser = (data: unknown) => {
     try {
       const result = CreateUserSchema.parse(data);
       setValidationResult(`✅ Valid: ${JSON.stringify(result, null, 2)}`);
@@ -55,7 +49,7 @@ export function TypesDemo() {
       <StyledView style={{ marginBottom: theme.spacing.lg }}>
         <StyledButton
           variant="primary"
-          onPress={() => validateUser(validUserData, true)}
+          onPress={() => validateUser(validUserData)}
           style={{ marginBottom: theme.spacing.sm }}
         >
           Validate Good Data
@@ -63,7 +57,7 @@ export function TypesDemo() {
 
         <StyledButton
           variant="secondary"
-          onPress={() => validateUser(invalidUserData, false)}
+          onPress={() => validateUser(invalidUserData)}
         >
           Validate Bad Data
         </StyledButton>

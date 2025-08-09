@@ -11,6 +11,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@repo/config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/ui": "workspace:*",
     "expo": "~52.0.46",

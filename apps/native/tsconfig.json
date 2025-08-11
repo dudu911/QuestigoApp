@@ -7,5 +7,5 @@
       "@repo/*": ["../../packages/*/src"]
     }
   },
-  "include": ["**/*", "nativewind-env.d.ts"]
+  "include": ["**/*"]
 }

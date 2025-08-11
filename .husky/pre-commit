@@ -1,1 +1,7 @@
-npx lint-staged
+#!/usr/bin/env sh
+
+# Run lint-staged via pnpm (avoid npx; pnpm workspace)
+command -v pnpm >/dev/null 2>&1 || {
+	echo "[pre-commit] pnpm not found in PATH" >&2; exit 127; }
+
+pnpm run lint-staged

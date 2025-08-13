@@ -30,4 +30,46 @@ config.resolver.alias = {
   "react-native": path.resolve(workspaceRoot, "node_modules/react-native"),
 };
 
+// 6. Add asset resolution for pnpm workspace structure
+config.resolver.assetExts = [
+  ...config.resolver.assetExts,
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "svg",
+];
+
+// 7. Add watch folders to include react-native assets from pnpm structure
+config.watchFolders = [
+  workspaceRoot,
+  path.resolve(workspaceRoot, "node_modules"),
+  path.resolve(workspaceRoot, "node_modules/.pnpm"),
+];
+
+// 8. Add platform-specific resolution to block native modules on web
+const originalResolveRequest = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  // Block react-native-maps and related native modules on web platform
+  if (
+    platform === "web" &&
+    (moduleName === "react-native-maps" ||
+      moduleName.startsWith("react-native-maps/") ||
+      moduleName.includes("codegenNativeCommands") ||
+      moduleName.includes("codegenNativeComponent"))
+  ) {
+    // Return a mock module path that doesn't exist to prevent bundling
+    return {
+      type: "empty",
+    };
+  }
+
+  // Use original resolver for other cases
+  if (originalResolveRequest) {
+    return originalResolveRequest(context, moduleName, platform);
+  }
+
+  return context.resolveRequest(context, moduleName, platform);
+};
+
 module.exports = config;

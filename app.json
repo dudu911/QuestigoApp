@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.dudu911.questigo"
+  },
+  "ios": {
+    "bundleIdentifier": "com.dudu911.questigo"
+  }
+}

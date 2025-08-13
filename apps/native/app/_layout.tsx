@@ -11,7 +11,7 @@ const client = new QueryClient();
 
 export default function RootLayout() {
   useEffect(() => {
-    // Initialize any needed setup here
+    // one-time init placeholder
   }, []);
 
   return (

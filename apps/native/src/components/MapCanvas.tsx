@@ -1,86 +1,81 @@
-import { View, StyleSheet, Platform } from "react-native";
-import { StyledText } from "@repo/ui";
+import { View, StyleSheet, Platform, Text } from "react-native";
 
 export function MapCanvas() {
-  // For now, show a placeholder for all platforms until expo-maps is properly configured
-  // This ensures the app works while we're developing the shell structure
-  return (
-    <View style={[styles.container, styles.webPlaceholder]}>
-      <View style={styles.mapOverlay}>
-        <StyledText size="lg" color="white" style={{ textAlign: "center" }}>
-          🗺️ Questigo World Map
-        </StyledText>
-        <StyledText
-          size="sm"
-          color="#ccc"
-          style={{ textAlign: "center", marginTop: 8 }}
-        >
-          {Platform.OS === "web"
-            ? "Interactive maps available on mobile"
-            : "Real maps coming soon!"}
-        </StyledText>
-        <StyledText
-          size="xs"
-          color="#888"
-          style={{ textAlign: "center", marginTop: 12 }}
-        >
-          Shell navigation working ✅
-        </StyledText>
-      </View>
-    </View>
-  );
-
-  // TODO: Enable when expo-maps is properly configured
-  // For now, keeping this commented out to avoid native module errors
-  /*
+  // Early return for web platform to avoid any native module imports
   if (Platform.OS === "web") {
     return (
-      <View style={[styles.container, styles.placeholder]}>
-        <View style={styles.mapOverlay}>
-          <StyledText size="lg" color="white" style={{ textAlign: "center" }}>
-            🗺️ Questigo World Map
-          </StyledText>
-          <StyledText size="sm" color="#ccc" style={{ textAlign: "center", marginTop: 8 }}>
-            Interactive maps available on mobile
-          </StyledText>
-        </View>
+      <View style={[styles.container, styles.webFallback]}>
+        <Text style={styles.webFallbackText}>
+          Maps are not supported on web platform.{"\n"}
+          Please use the mobile app to view maps.
+        </Text>
       </View>
     );
   }
 
+  // For native platforms, try to load react-native-maps
   try {
-    const ExpoMaps = require("expo-maps");
-    
-    if (!ExpoMaps || (!ExpoMaps.GoogleMaps && !ExpoMaps.AppleMaps)) {
-      return placeholder;
-    }
+    const MapViewModule = require("react-native-maps");
+    const MapView = MapViewModule.default || MapViewModule;
 
-    const { GoogleMaps, AppleMaps } = ExpoMaps;
-    const MapView = Platform.OS === "ios" ? AppleMaps.View : GoogleMaps.View;
+    if (!MapView) {
+      return (
+        <View style={[styles.container, styles.fallback]}>
+          <Text style={styles.fallbackText}>Map module not available</Text>
+        </View>
+      );
+    }
 
     return (
       <View style={styles.container}>
-        <MapView style={StyleSheet.absoluteFill} />
+        <MapView
+          style={StyleSheet.absoluteFill}
+          initialRegion={{
+            latitude: 32.0853, // Tel Aviv coordinates as default
+            longitude: 34.7818,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+          mapType="standard"
+          showsUserLocation={false}
+          followsUserLocation={false}
+          showsMyLocationButton={false}
+        />
       </View>
     );
-  } catch (error) {
-    console.log("Maps module not available:", error);
-    return placeholder;
+  } catch (e) {
+    console.log("MapCanvas error:", e);
+    return (
+      <View style={[styles.container, styles.fallback]}>
+        <Text style={styles.fallbackText}>Loading map...</Text>
+      </View>
+    );
   }
-  */
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000" },
-  webPlaceholder: {
+  fallback: {
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#1a1a1a",
-  },
-  mapOverlay: {
-    backgroundColor: "rgba(0,0,0,0.8)",
     padding: 20,
-    borderRadius: 12,
+  },
+  fallbackText: {
+    color: "#fff",
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  webFallback: {
+    justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    padding: 20,
+  },
+  webFallbackText: {
+    color: "#333",
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
   },
 });

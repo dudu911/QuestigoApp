@@ -12,7 +12,13 @@
     "lint:web": "pnpm --filter web lint",
     "lint:native": "pnpm --filter native lint",
     "lint-staged": "lint-staged",
-    "prepare": "husky"
+    "prepare": "husky",
+    "android": "cd apps/native && npx expo run:android",
+    "ios": "cd apps/native && npx expo run:ios",
+    "prebuild": "cd apps/native && npx expo prebuild",
+    "prebuild:clean": "cd apps/native && npx expo prebuild --clean",
+    "start": "cd apps/native && npx expo start",
+    "start:clear": "cd apps/native && npx expo start --clear"
   },
   "devDependencies": {
     "@babel/helper-module-imports": "^7.27.1",
@@ -44,5 +50,11 @@
     ]
   },
   "name": "with-react-native-web",
-  "packageManager": "pnpm@10.12.4"
+  "packageManager": "pnpm@10.12.4",
+  "version": "1.0.0",
+  "dependencies": {
+    "expo": "~52.0.47",
+    "react": "18.3.1",
+    "react-native": "0.76.9"
+  }
 }

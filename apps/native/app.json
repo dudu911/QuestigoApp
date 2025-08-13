@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "native",
-    "slug": "native",
+    "name": "Questigo",
+    "slug": "questigo",
     "version": "1.0.0",
     "scheme": "com.turbo.example",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -18,19 +18,42 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dudu911.questigo"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.turbo.example"
+      "package": "com.dudu911.questigo",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBjIFDUFQmZJ-VlkXmTputmaPEONxG5DNs"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-router", "expo-maps"]
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.25",
+            "proguardMinifyEnabled": false,
+            "enableProguardInReleaseBuilds": false
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7efab992-b4fe-487c-bc53-caec78fcfbad"
+      }
+    }
   }
 }

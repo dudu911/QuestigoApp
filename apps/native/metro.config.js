@@ -28,6 +28,14 @@ config.resolver.platforms = ["ios", "android", "native", "web"];
 config.resolver.alias = {
   react: path.resolve(workspaceRoot, "node_modules/react"),
   "react-native": path.resolve(workspaceRoot, "node_modules/react-native"),
+  "expo-modules-core": path.resolve(
+    workspaceRoot,
+    "node_modules/expo-modules-core",
+  ),
+  "react-native-reanimated": path.resolve(
+    workspaceRoot,
+    "node_modules/react-native-reanimated",
+  ),
 };
 
 // 6. Add asset resolution for pnpm workspace structure

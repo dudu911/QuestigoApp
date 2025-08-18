@@ -16,19 +16,9 @@ export function MapCanvas() {
   // For native platforms, try to load react-native-maps
   try {
     const MapViewModule = require("react-native-maps");
+    const MapView = MapViewModule.default || MapViewModule;
 
-    // Handle different export patterns
-    let MapView;
-    if (MapViewModule && typeof MapViewModule === "object") {
-      // Try default export first, then named export, then the module itself
-      MapView = MapViewModule.default || MapViewModule.MapView || MapViewModule;
-    } else {
-      MapView = MapViewModule;
-    }
-
-    // Ensure MapView is a valid React component
-    if (!MapView || typeof MapView !== "function") {
-      console.log("MapView is not a valid component:", typeof MapView);
+    if (!MapView) {
       return (
         <View style={[styles.container, styles.fallback]}>
           <Text style={styles.fallbackText}>Map module not available</Text>

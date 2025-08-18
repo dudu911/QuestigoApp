@@ -15,6 +15,7 @@ config.watchFolders = [workspaceRoot];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
   path.resolve(workspaceRoot, "node_modules"),
+  path.resolve(workspaceRoot, "node_modules/.pnpm"),
 ];
 
 // 3. Force Metro to resolve (sub)dependencies only from the `nodeModulesPaths`
@@ -28,13 +29,20 @@ config.resolver.platforms = ["ios", "android", "native", "web"];
 config.resolver.alias = {
   react: path.resolve(workspaceRoot, "node_modules/react"),
   "react-native": path.resolve(workspaceRoot, "node_modules/react-native"),
-  "expo-modules-core": path.resolve(
-    workspaceRoot,
-    "node_modules/expo-modules-core",
-  ),
   "react-native-reanimated": path.resolve(
     workspaceRoot,
     "node_modules/react-native-reanimated",
+  ),
+  "expo-constants": path.resolve(workspaceRoot, "node_modules/expo-constants"),
+  "expo-asset": path.resolve(workspaceRoot, "node_modules/expo-asset"),
+  "expo-font": path.resolve(workspaceRoot, "node_modules/expo-font"),
+  "expo-file-system": path.resolve(
+    workspaceRoot,
+    "node_modules/expo-file-system",
+  ),
+  "expo-modules-core": path.resolve(
+    workspaceRoot,
+    "node_modules/.pnpm/expo-modules-core@2.2.3/node_modules/expo-modules-core",
   ),
 };
 
@@ -53,6 +61,10 @@ config.watchFolders = [
   workspaceRoot,
   path.resolve(workspaceRoot, "node_modules"),
   path.resolve(workspaceRoot, "node_modules/.pnpm"),
+  path.resolve(
+    workspaceRoot,
+    "node_modules/.pnpm/expo-modules-core@2.2.3/node_modules/expo-modules-core",
+  ),
 ];
 
 // 8. Add platform-specific resolution to block native modules on web

@@ -36,3 +36,8 @@ yarn-error.log*
 
 # turbo
 .turbo
+
+# Production build outputs
+dist/
+dist-web/
+apps/*/dist/

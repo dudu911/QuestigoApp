@@ -40,10 +40,7 @@ config.resolver.alias = {
     workspaceRoot,
     "node_modules/expo-file-system",
   ),
-  "expo-modules-core": path.resolve(
-    workspaceRoot,
-    "node_modules/.pnpm/expo-modules-core@2.2.3/node_modules/expo-modules-core",
-  ),
+  // expo-modules-core is now available at workspace root, no alias needed
 };
 
 // 6. Add asset resolution for pnpm workspace structure
@@ -61,27 +58,19 @@ config.watchFolders = [
   workspaceRoot,
   path.resolve(workspaceRoot, "node_modules"),
   path.resolve(workspaceRoot, "node_modules/.pnpm"),
-  path.resolve(
-    workspaceRoot,
-    "node_modules/.pnpm/expo-modules-core@2.2.3/node_modules/expo-modules-core",
-  ),
 ];
 
-// 8. Add platform-specific resolution to block native modules on web
+// 8. Add platform-specific resolution to redirect react-native-maps only on web
 const originalResolveRequest = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  // Block react-native-maps and related native modules on web platform
-  if (
-    platform === "web" &&
-    (moduleName === "react-native-maps" ||
-      moduleName.startsWith("react-native-maps/") ||
-      moduleName.includes("codegenNativeCommands") ||
-      moduleName.includes("codegenNativeComponent"))
-  ) {
-    // Return a mock module path that doesn't exist to prevent bundling
-    return {
-      type: "empty",
-    };
+  // Only redirect react-native-maps to @teovilla/react-native-web-maps on web platform
+  // Keep native platforms (ios, android) using the original react-native-maps
+  if (moduleName === "react-native-maps" && platform === "web") {
+    return context.resolveRequest(
+      context,
+      "@teovilla/react-native-web-maps",
+      platform,
+    );
   }
 
   // Use original resolver for other cases

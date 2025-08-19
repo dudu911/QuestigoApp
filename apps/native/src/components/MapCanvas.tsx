@@ -1,11 +1,12 @@
 import { View, StyleSheet } from "react-native";
-import { MapView } from "@teovilla/react-native-web-maps";
+import MapView from "react-native-maps";
 
 export function MapCanvas() {
   return (
     <View style={styles.container}>
       <MapView
         style={StyleSheet.absoluteFill}
+        provider="google"
         initialRegion={{
           latitude: 32.0853, // Tel Aviv coordinates as default
           longitude: 34.7818,

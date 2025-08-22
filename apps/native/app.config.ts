@@ -22,8 +22,7 @@ const config: ExpoConfig = {
     supportsTablet: true,
     bundleIdentifier: "com.dudu911.questigo",
     config: {
-      googleMapsApiKey:
-        process.env.GOOGLE_MAPS_API_KEY || process.env.EXPO_PUBLIC_MAPS_KEY,
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS,
     },
   },
   android: {
@@ -34,8 +33,7 @@ const config: ExpoConfig = {
     package: "com.dudu911.questigo",
     config: {
       googleMaps: {
-        apiKey:
-          process.env.GOOGLE_MAPS_API_KEY || process.env.EXPO_PUBLIC_MAPS_KEY,
+        apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID,
       },
     },
   },
@@ -64,5 +62,4 @@ const config: ExpoConfig = {
     },
   },
 };
-
 export default config;

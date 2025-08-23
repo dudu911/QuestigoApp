@@ -19,16 +19,72 @@ Questigo is a React Native/Web monorepo built with modern tooling and a custom u
 ```
 questigo/
 ├── apps/
-│   ├── native/           # Expo React Native application
-│   ├── web/             # Next.js web application
-│   └── docs/            # Documentation site
+│   ├── native/
+│   │   ├── app/
+│   │   │   ├── _layout.tsx              # Root layout (ThemeProvider, Redux Provider, Supabase Client, i18n)
+│   │   │   ├── index.tsx                # Redirect to /home or /intro if first-time
+│   │   │   ├── intro/                   # Intro/Tutorial flow
+│   │   │   │   └── index.tsx
+│   │   │   ├── auth/                    # Auth routes
+│   │   │   │   ├── login.tsx
+│   │   │   │   ├── register.tsx
+│   │   │   │   └── reset-password.tsx
+│   │   │   ├── home/                    # Quest discovery
+│   │   │   │   └── index.tsx
+│   │   │   ├── quest/                   # Quest detail + gameplay
+│   │   │   │   ├── [id].tsx             # QuestDetails screen
+│   │   │   │   ├── [id]/gameplay.tsx    # Gameplay screen (Map + Riddle)
+│   │   │   │   └── [id]/complete.tsx    # Completion screen
+│   │   │   ├── lobby/                   # Multiplayer lobby modal
+│   │   │   │   └── [code].tsx
+│   │   │   ├── store/                   # Credit store
+│   │   │   │   └── index.tsx
+│   │   │   ├── profile/                 # Profile & settings
+│   │   │   │   └── index.tsx
+│   │   │   └── _layout.tab.tsx          # Bottom tab navigator (Home, Map, Store, Profile)
+│   │   ├── src/
+│   │   │   ├── components/              # Local/native components
+│   │   │   │   ├── MapCanvas.tsx        # Cross-platform map
+│   │   │   │   └── QuestMap.tsx         # Wraps MapCanvas with quest logic
+│   │   │   ├── redux/                   # Redux slices
+│   │   │   │   ├── store.ts             # Root store
+│   │   │   │   ├── authSlice.ts         # Auth state (JWT, profile)
+│   │   │   │   ├── questSlice.ts        # Active quest, riddles, hints
+│   │   │   │   ├── lobbySlice.ts        # Multiplayer lobby state
+│   │   │   │   └── creditsSlice.ts      # Credit balance & purchases
+│   │   │   ├── services/                # Supabase + API services
+│   │   │   │   ├── supabaseClient.ts    # Supabase client init
+│   │   │   │   ├── authService.ts       # Login, logout, social OAuth
+│   │   │   │   ├── questService.ts      # Fetch quests, riddles
+│   │   │   │   ├── lobbyService.ts      # Real-time lobby join/sync
+│   │   │   │   └── paymentService.ts    # Stripe/PSP checkout
+│   │   │   └── utils/                   # Helpers
+│   │   │       ├── i18n.ts              # i18n setup (EN/HE, RTL)
+│   │   │       └── geo.ts               # GPS radius check
+│   │   └── app.json
+│   ├── web/                             # Optional web app (can use same routes)
+│   │   └── ...
 ├── packages/
-│   ├── ui/              # Universal styled components library ⭐
-│   ├── eslint-config/   # Shared ESLint configuration
-│   └── typescript-config/ # Shared TypeScript configuration
-├── package.json         # Root workspace configuration
-├── pnpm-workspace.yaml  # pnpm workspace settings
-└── turbo.json          # Turborepo build configuration
+│   ├── ui/                              # Shared UI library
+│   │   ├── components/
+│   │   │   ├── IntroCarousel.tsx
+│   │   │   ├── QuestCard.tsx
+│   │   │   ├── RiddlePanel.tsx
+│   │   │   ├── HintButton.tsx
+│   │   │   ├── Badge.tsx
+│   │   │   ├── CreditPackCard.tsx
+│   │   │   └── PlayerAvatar.tsx
+│   │   └── index.ts                     # Export barrel
+│   ├── config/
+│   │   ├── index.ts                     # Env + constants
+│   │   └── supabase.ts                  # Supabase URL/key loading from env
+│   └── types/
+│       ├── quest.ts                     # Quest, riddle, hint types
+│       ├── lobby.ts                     # Lobby/player types
+│       ├── auth.ts                      # Auth/user types
+│       └── index.ts
+├── .env                                 # EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY, ...
+└── turbo.json, pnpm-workspace.yaml, etc.
 ```
 
 ---

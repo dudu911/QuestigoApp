@@ -51,6 +51,9 @@
       ]
     ],
     "extra": {
+      "router": {
+        "appRoot": "app"
+      },
       "eas": {
         "projectId": "7efab992-b4fe-487c-bc53-caec78fcfbad"
       }

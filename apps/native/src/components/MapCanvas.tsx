@@ -1,45 +1,60 @@
 import { View, StyleSheet, Platform, Text } from "react-native";
+import { useEffect, useState } from "react";
 
 export function MapCanvas() {
-  // Early return for web platform to avoid any native module imports
+  const [googleLoaded, setGoogleLoaded] = useState(false);
+
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      if (window.google) {
+        setGoogleLoaded(true);
+      } else {
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_WEB}`;
+        script.async = true;
+        script.onload = () => setGoogleLoaded(true);
+        document.head.appendChild(script);
+      }
+    }
+  }, []);
+
   if (Platform.OS === "web") {
+    if (!googleLoaded) {
+      return <Text>Loading Google Maps...</Text>;
+    }
+
+    const GoogleMap = require("react-native-web-maps").default;
+
     return (
-      <View style={[styles.container, styles.webFallback]}>
-        <Text style={styles.webFallbackText}>
-          Maps are not supported on web platform.{"\n"}
-          Please use the mobile app to view maps.
-        </Text>
+      <View style={styles.container}>
+        <GoogleMap
+          initialRegion={{
+            latitude: 32.0853,
+            longitude: 34.7818,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+          style={{ width: "100%", height: 400 }}
+        />
       </View>
     );
   }
 
-  // For native platforms, try to load react-native-maps
   try {
     const MapViewModule = require("react-native-maps");
     const MapView = MapViewModule.default || MapViewModule;
-
-    if (!MapView) {
-      return (
-        <View style={[styles.container, styles.fallback]}>
-          <Text style={styles.fallbackText}>Map module not available</Text>
-        </View>
-      );
-    }
 
     return (
       <View style={styles.container}>
         <MapView
           style={StyleSheet.absoluteFill}
           initialRegion={{
-            latitude: 32.0853, // Tel Aviv coordinates as default
+            latitude: 32.0853,
             longitude: 34.7818,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
           mapType="standard"
-          showsUserLocation={false}
-          followsUserLocation={false}
-          showsMyLocationButton={false}
         />
       </View>
     );
@@ -55,11 +70,7 @@ export function MapCanvas() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000" },
-  fallback: {
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
+  fallback: { justifyContent: "center", alignItems: "center", padding: 20 },
   fallbackText: {
     color: "#fff",
     fontSize: 16,

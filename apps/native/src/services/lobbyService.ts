@@ -1,6 +1,20 @@
+import { queryWithSchema, singleWithSchema } from "./queryWithSchema";
+import { LobbySchema, PlayerSchema } from "@repo/types";
 import { supabase } from "./supabaseClient";
 
-// Subscribe to lobby changes
+// Fetch lobby by id
+export async function fetchLobbyById(lobbyId: string) {
+  return singleWithSchema("lobbies", LobbySchema, (q) => q.eq("id", lobbyId));
+}
+
+// Fetch players for a lobby
+export async function fetchLobbyPlayers(lobbyId: string) {
+  return queryWithSchema("lobby_players", PlayerSchema, (q) =>
+    q.eq("lobby_id", lobbyId),
+  );
+}
+
+// Subscribe to realtime changes (unchanged — Supabase subscription isn’t typed by Zod)
 export function subscribeToLobby(
   lobbyId: string,
   onChange: (payload: any) => void,
@@ -18,22 +32,4 @@ export function subscribeToLobby(
       onChange,
     )
     .subscribe();
-}
-
-export async function createLobby(hostId: string) {
-  const { data, error } = await supabase
-    .from("lobbies")
-    .insert({ host_id: hostId })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function joinLobby(lobbyId: string, playerId: string) {
-  const { data, error } = await supabase
-    .from("lobby_players")
-    .insert({ lobby_id: lobbyId, player_id: playerId });
-  if (error) throw error;
-  return data;
 }

@@ -15,5 +15,9 @@ export * from "./team";
 
 export * from "./lobby";
 
+export * from "./credits";
+
+export * from "./auth";
+
 // Re-export zod for convenience
 export { z } from "zod";

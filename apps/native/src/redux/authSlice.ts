@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User } from "@repo/types";
+import { Profile } from "@repo/types";
 
 export type SupportedLanguage = "en" | "he";
 
 interface AuthState {
-  user: User | null;
+  user: Profile | null;
   token: string | null;
   loading: boolean;
   locale: SupportedLanguage;
@@ -23,7 +23,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUser(state, action: PayloadAction<User | null>) {
+    setUser(state, action: PayloadAction<Profile | null>) {
       state.user = action.payload;
     },
     setToken(state, action: PayloadAction<string | null>) {
@@ -47,5 +47,4 @@ const authSlice = createSlice({
 
 export const { setUser, setToken, setLoading, setLocale, setIsOnline, logout } =
   authSlice.actions;
-
 export default authSlice.reducer;

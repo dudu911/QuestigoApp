@@ -1,11 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Purchase } from "@repo/types";
 
 interface CreditsState {
   balance: number;
   loading: boolean;
+  purchases: Purchase[];
 }
 
-const initialState: CreditsState = { balance: 0, loading: false };
+const initialState: CreditsState = {
+  balance: 0,
+  loading: false,
+  purchases: [],
+};
 
 const creditsSlice = createSlice({
   name: "credits",
@@ -23,9 +29,17 @@ const creditsSlice = createSlice({
     setLoading(state, action: PayloadAction<boolean>) {
       state.loading = action.payload;
     },
+    setPurchases(state, action: PayloadAction<Purchase[]>) {
+      state.purchases = action.payload;
+    },
   },
 });
 
-export const { setBalance, incrementBalance, decrementBalance, setLoading } =
-  creditsSlice.actions;
+export const {
+  setBalance,
+  incrementBalance,
+  decrementBalance,
+  setLoading,
+  setPurchases,
+} = creditsSlice.actions;
 export default creditsSlice.reducer;

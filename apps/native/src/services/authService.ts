@@ -1,18 +1,20 @@
 import { supabase } from "./supabaseClient";
+import { singleWithSchema } from "./queryWithSchema";
+import { ProfileSchema } from "@repo/types";
 
 export async function signInWithEmail(email: string, password: string) {
-  return await supabase.auth.signInWithPassword({ email, password });
+  return supabase.auth.signInWithPassword({ email, password });
 }
 
 export async function signUpWithEmail(email: string, password: string) {
-  return await supabase.auth.signUp({ email, password });
+  return supabase.auth.signUp({ email, password });
 }
 
 export async function signOut() {
-  return await supabase.auth.signOut();
+  return supabase.auth.signOut();
 }
 
-export async function getCurrentUser() {
-  const { data } = await supabase.auth.getUser();
-  return data.user;
+// Fetch the user’s profile (typed + validated)
+export async function fetchProfile(userId: string) {
+  return singleWithSchema("profiles", ProfileSchema, (q) => q.eq("id", userId));
 }

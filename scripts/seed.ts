@@ -9,11 +9,11 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY! // server-only
 const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
 
 async function main() {
-  // 1. Create a demo user with admin API
+  // 1. Create a demo user
   const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
-    email: "demo@gmail.com",
+    email: "demo@test.com",
     password: "demo1234",
-    email_confirm: true, // skip email confirmation
+    email_confirm: true,
   })
   if (userError) throw userError
 
@@ -84,7 +84,7 @@ async function main() {
   if (lobbyError) throw lobbyError
   console.log("✅ Inserted lobby:", lobby.id)
 
-  // 6. Add the user as a player in the lobby
+  // 6. Add user to lobby_players
   const { error: playerError } = await supabaseAdmin.from("lobby_players").insert({
     lobby_id: lobby.id,
     player_id: userId,
@@ -93,6 +93,26 @@ async function main() {
   })
   if (playerError) throw playerError
   console.log("✅ Added user to lobby_players")
+
+  // 7. Seed user credits 💰
+  const { error: creditsError } = await supabaseAdmin.from("user_credits").upsert({
+    user_id: userId,
+    balance: 100, // give demo user 100 credits
+    updated_at: new Date().toISOString(),
+  })
+  if (creditsError) throw creditsError
+  console.log("✅ Seeded user credits (100)")
+
+  // 8. Insert a purchase record
+  const { error: purchaseError } = await supabaseAdmin.from("purchases").insert({
+    user_id: userId,
+    package_id: "CREDITS_100",
+    credits: 100,
+    amount: 5.00,
+    currency: "USD",
+  })
+  if (purchaseError) throw purchaseError
+  console.log("✅ Inserted purchase record (100 credits for $5)")
 
   console.log("🎉 Seed complete!")
 }

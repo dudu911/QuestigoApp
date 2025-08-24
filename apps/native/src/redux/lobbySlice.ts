@@ -49,5 +49,4 @@ export const {
   resetLobby,
   setTeamCode,
 } = lobbySlice.actions;
-
 export default lobbySlice.reducer;

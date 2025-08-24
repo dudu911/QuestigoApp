@@ -3,6 +3,18 @@ import { StyledText, StyledButton } from "@repo/ui";
 import { View } from "react-native";
 
 export default function LobbyModal() {
+  // ysage examps for realtime lobby subscription
+  //   import { useAppDispatch } from "../redux/hooks"
+  // import { setLobby, resetLobby } from "../redux/lobbySlice"
+
+  // const dispatch = useAppDispatch()
+
+  // // Join a lobby
+  // dispatch(setLobby({ id: "your-lobby-id", code: "DEMO1234", ... }))
+
+  // // Later leave lobby
+  // dispatch(resetLobby())
+
   return (
     <>
       <Stack.Screen

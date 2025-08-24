@@ -10,7 +10,8 @@ export default function QuestsScreen() {
   useEffect(() => {
     fetchQuests()
       .then((data) => setQuests(data ?? []))
-      .catch(() => {
+      .catch((error) => {
+        console.error("Error fetching quests", error);
         // Optionally handle error
         setQuests([]);
       })

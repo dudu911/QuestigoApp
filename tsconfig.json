@@ -1,4 +1,10 @@
 {
   "compilerOptions": {},
-  "extends": "expo/tsconfig.base"
+  "extends": "expo/tsconfig.base",
+  "baseUrl": ".",
+  "paths": {
+    "@repo/types/*": ["packages/types/src/*"],
+    "@redux/*": ["apps/native/src/redux/*"],
+    "@services/*": ["apps/native/src/services/*"]
+  }
 }

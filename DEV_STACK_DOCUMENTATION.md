@@ -354,5 +354,23 @@ pnpm dev:web     # Web app on localhost:3000
 
 ---
 
-_Last updated: August 8, 2025_
+Prrisma Schema
+model Riddle {
+id String @id @default(uuid())
+questId String
+title String
+prompt String
+image String? // optional image URL
+answer String
+hint String?
+latitude Float
+longitude Float
+radiusM Int @map("radius_m") @default(30) // maps to SQL column radius_m
+orderIndex Int @map("order_index")
+createdAt DateTime @default(now())
+
+quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+}
+
+_Last updated: August 24, 2025_
 _Project Status: Part 2 Complete ✅_

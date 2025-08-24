@@ -1,38 +1,43 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { StyledView, StyledText, StyledButton, useTheme } from "@repo/ui";
-import { useAppStore, type SupportedLanguage } from "../src/state/useAppStore";
+import { useAppSelector, useAppDispatch } from "../src/state/useAppStore";
+import type { RootState } from "../src/redux/store";
+// Define SupportedLanguage locally or import from shared types
+type SupportedLanguage = "en" | "he";
 
 export function ProvidersDemo() {
   const { t, i18n } = useTranslation();
   const { theme } = useTheme();
 
-  // Use the simplified store directly
-  const {
-    activeQuestId,
-    teamCode,
-    locale,
-    isOnline,
-    setActiveQuestId,
-    setTeamCode,
-    setLocale,
-    setIsOnline,
-  } = useAppStore();
+  // Use Redux selectors
+  const activeQuestId = useAppSelector(
+    (state: RootState) => state.quest.activeQuest?.id,
+  );
+  const teamCode = useAppSelector((state: RootState) => state.lobby.teamCode);
+  const locale = useAppSelector((state: RootState) => state.auth.locale);
+  const isOnline = useAppSelector((state: RootState) => state.auth.isOnline);
+
+  const dispatch = useAppDispatch();
+
+  // Action creators (replace with your actual slice actions)
+  // import { setActiveQuestId, setTeamCode, setLocale, setIsOnline } from your slices
+  // For demo, use inline dispatch
 
   const toggleLanguage = async () => {
     const newLocale: SupportedLanguage = locale === "en" ? "he" : "en";
     await i18n.changeLanguage(newLocale);
-    setLocale(newLocale);
+    dispatch({ type: "auth/setLocale", payload: newLocale });
   };
 
   const simulateQuest = () => {
     const questId = activeQuestId ? undefined : "demo-quest-123";
-    setActiveQuestId(questId);
+    dispatch({ type: "quest/setActiveQuestId", payload: questId });
   };
 
   const simulateTeam = () => {
     const newTeamCode = teamCode ? undefined : "DEMO";
-    setTeamCode(newTeamCode);
+    dispatch({ type: "lobby/setTeamCode", payload: newTeamCode });
   };
 
   return (
@@ -104,7 +109,9 @@ export function ProvidersDemo() {
 
         <StyledButton
           variant="secondary"
-          onPress={() => setIsOnline(!isOnline)}
+          onPress={() =>
+            dispatch({ type: "auth/setIsOnline", payload: !isOnline })
+          }
         >
           Toggle Network: {isOnline ? "Go Offline" : "Go Online"}
         </StyledButton>

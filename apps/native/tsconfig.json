@@ -1,10 +1,12 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "strict": true,
     "jsx": "react-jsx",
     "paths": {
-      "@repo/*": ["../../packages/*/src"]
+      "@repo/*": ["../../packages/*/src"],
+      "@services/*": ["../../apps/native/src/services/*"],
+      "@redux/*": ["../../apps/native/src/redux/*"]
     }
   },
   "include": ["**/*"]

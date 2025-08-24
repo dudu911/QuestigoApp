@@ -13,5 +13,7 @@ export * from "./quest";
 // Export all team-related types and schemas
 export * from "./team";
 
+export * from "./lobby";
+
 // Re-export zod for convenience
 export { z } from "zod";

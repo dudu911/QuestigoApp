@@ -5,6 +5,7 @@ export const RiddleSchema = z.object({
   id: z.string(),
   title: z.string(),
   prompt: z.string(),
+  image: z.string().url().optional(),
   lat: z.number(),
   lng: z.number(),
   radiusM: z.number().default(30),

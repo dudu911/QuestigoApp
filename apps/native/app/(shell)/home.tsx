@@ -25,6 +25,11 @@ export default function Home() {
             Profile
           </StyledButton>
         </Link>
+        <Link href="/(shell)/quests" asChild>
+          <StyledButton variant="secondary" size="sm">
+            Quests
+          </StyledButton>
+        </Link>
       </View>
 
       <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>

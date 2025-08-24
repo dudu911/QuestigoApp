@@ -6,7 +6,8 @@ import { ThemeProvider } from "@repo/ui";
 import { useEffect } from "react";
 import { I18nextProvider } from "react-i18next";
 import i18n from "../src/i18n";
-
+import { Provider } from "react-redux";
+import { store } from "../src/redux/store";
 const client = new QueryClient();
 
 export default function RootLayout() {
@@ -18,9 +19,11 @@ export default function RootLayout() {
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
         <SafeAreaProvider>
-          <ThemeProvider>
-            <Slot />
-          </ThemeProvider>
+          <Provider store={store}>
+            <ThemeProvider>
+              <Slot />
+            </ThemeProvider>
+          </Provider>
         </SafeAreaProvider>
       </QueryClientProvider>
     </I18nextProvider>

@@ -4,7 +4,7 @@ import { Purchase } from "@repo/types";
 interface CreditsState {
   balance: number;
   loading: boolean;
-  purchases: Purchase[];
+  purchases: Purchase[]; // ✅ Purchase.created_at is Date
 }
 
 const initialState: CreditsState = {

@@ -3,7 +3,7 @@ import { z } from "zod";
 export const UserCreditsSchema = z.object({
   user_id: z.string().uuid(),
   balance: z.number().default(0),
-  updated_at: z.string().datetime(),
+  updated_at: z.coerce.date(), // ✅ coercion
 });
 
 export type UserCredits = z.infer<typeof UserCreditsSchema>;
@@ -15,7 +15,7 @@ export const PurchaseSchema = z.object({
   credits: z.number(),
   amount: z.number(),
   currency: z.string().default("USD"),
-  created_at: z.string().datetime(),
+  created_at: z.coerce.date(), // ✅ coercion
 });
 
 export type Purchase = z.infer<typeof PurchaseSchema>;

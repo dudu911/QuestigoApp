@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Lobby, Player } from "@repo/types";
 
 interface LobbyState {
-  currentLobby: Lobby | null;
+  currentLobby: Lobby | null; // ✅ Lobby.createdAt is Date
   players: Player[];
   teamCode: string | null;
 }

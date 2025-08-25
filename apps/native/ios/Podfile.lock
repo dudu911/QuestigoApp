@@ -1801,6 +1801,49 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNSVG (15.8.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - RNSVG/common (= 15.8.0)
+    - Yoga
+  - RNSVG/common (15.8.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
 
@@ -1885,6 +1928,7 @@ DEPENDENCIES:
   - "ReactCommon/turbomodule/core (from `../../../node_modules/.pnpm/react-native@0.76.9_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babel+core@7.28.0__@ty_edf8de64b9a204ae9c05f4af2e53015d/node_modules/react-native/ReactCommon`)"
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - RNSVG (from `../node_modules/react-native-svg`)
   - "Yoga (from `../../../node_modules/.pnpm/react-native@0.76.9_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babel+core@7.28.0__@ty_edf8de64b9a204ae9c05f4af2e53015d/node_modules/react-native/ReactCommon/yoga`)"
 
 SPEC REPOS:
@@ -2049,6 +2093,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNSVG:
+    :path: "../node_modules/react-native-svg"
   Yoga:
     :path: "../../../node_modules/.pnpm/react-native@0.76.9_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babel+core@7.28.0__@ty_edf8de64b9a204ae9c05f4af2e53015d/node_modules/react-native/ReactCommon/yoga"
 
@@ -2131,6 +2177,7 @@ SPEC CHECKSUMS:
   ReactCommon: bfd3600989d79bc3acbe7704161b171a1480b9fd
   RNReanimated: f39a17a7eebe93448d49cd78e1cd49c14548cb8f
   RNScreens: 2856a2abe759a5a56946874f76372c9f033af19a
+  RNSVG: 81d52481cde97ce0dcc81a55b0310723817088d0
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 40f19fff64dce86773bf8b602c7070796c007970
 

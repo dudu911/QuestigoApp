@@ -8,12 +8,11 @@ export const QuestSchema = z.object({
   country: z.string().nullable().optional(),
   hero_image: z.string().url().nullable().optional(),
   created_by: z.string().uuid().nullable().optional(),
-  created_at: z.string().datetime(),
+  created_at: z.coerce.date(), // ✅ coercion
 });
 
 export type Quest = z.infer<typeof QuestSchema>;
 
-// Existing Riddle schema (for reference)
 export const RiddleSchema = z.object({
   id: z.string().uuid(),
   quest_id: z.string().uuid(),
@@ -26,7 +25,7 @@ export const RiddleSchema = z.object({
   lng: z.number(),
   radiusM: z.number().default(30),
   order_index: z.number(),
-  created_at: z.string().datetime(),
+  created_at: z.coerce.date(), // ✅ coercion
 });
 
 export type Riddle = z.infer<typeof RiddleSchema>;

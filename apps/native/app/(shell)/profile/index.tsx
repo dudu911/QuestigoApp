@@ -1,16 +1,16 @@
 import { StyledText, StyledButton } from "@repo/ui";
 import { View } from "react-native";
-import { BottomPanel } from "../../src/components/BottomPanel";
+import { BottomPanel } from "../../../src/components/BottomPanel";
 import { Link } from "expo-router";
 
-export default function Map() {
+export default function Profile() {
   return (
     <BottomPanel>
-      <StyledText size="xl">Map</StyledText>
+      <StyledText size="xl">Profile</StyledText>
       <StyledText size="sm">
-        Explore the world and find quest locations
+        View your achievements, stats, and quest history
       </StyledText>
-      <StyledButton variant="secondary">Find Nearby Quests</StyledButton>
+      <StyledButton variant="secondary">Edit Profile</StyledButton>
 
       <View style={{ flexDirection: "row", gap: 8, marginTop: 16 }}>
         <Link href="/(shell)/home" asChild>
@@ -18,14 +18,14 @@ export default function Map() {
             Home
           </StyledButton>
         </Link>
+        <Link href="/(shell)/map" asChild>
+          <StyledButton variant="secondary" size="sm">
+            Map
+          </StyledButton>
+        </Link>
         <Link href="/(shell)/store" asChild>
           <StyledButton variant="secondary" size="sm">
             Store
-          </StyledButton>
-        </Link>
-        <Link href="/(shell)/profile" asChild>
-          <StyledButton variant="secondary" size="sm">
-            Profile
           </StyledButton>
         </Link>
       </View>

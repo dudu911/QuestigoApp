@@ -4,7 +4,7 @@ import { Profile } from "@repo/types";
 export type SupportedLanguage = "en" | "he";
 
 interface AuthState {
-  user: Profile | null;
+  user: Profile | null; // ✅ Profile.created_at is Date
   token: string | null;
   loading: boolean;
   locale: SupportedLanguage;

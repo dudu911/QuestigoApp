@@ -2,8 +2,8 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Quest, Riddle } from "@repo/types";
 
 interface QuestState {
-  activeQuest: Quest | null;
-  riddles: Riddle[];
+  activeQuest: Quest | null; // ✅ Quest.created_at is Date
+  riddles: Riddle[]; // ✅ Riddle.created_at is Date
   currentRiddleIndex: number;
   hintUsed: boolean;
 }

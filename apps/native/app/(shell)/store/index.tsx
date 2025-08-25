@@ -1,6 +1,6 @@
 import { StyledText, StyledButton } from "@repo/ui";
 import { View } from "react-native";
-import { BottomPanel } from "../../src/components/BottomPanel";
+import { BottomPanel } from "../../../src/components/BottomPanel";
 import { Link } from "expo-router";
 
 export default function Store() {

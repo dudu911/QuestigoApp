@@ -1,15 +1,14 @@
 import { View, StyleSheet } from "react-native";
 import { Tabs } from "expo-router";
 import { MapCanvas } from "../../src/components/MapCanvas";
-import { Home, ShoppingCart, User } from "lucide-react-native";
+import { Home, ShoppingCart, Wallet, User } from "lucide-react-native";
 
 export default function ShellLayout() {
   return (
     <View style={styles.container}>
-      {/* Background map is always mounted */}
+      {/* Persistent background map */}
       <MapCanvas />
 
-      {/* Tabs overlay on top of the map */}
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -26,7 +25,7 @@ export default function ShellLayout() {
         }}
       >
         <Tabs.Screen
-          name="home"
+          name="home/index"
           options={{
             title: "Home",
             tabBarIcon: ({ color, size }) => (
@@ -35,7 +34,7 @@ export default function ShellLayout() {
           }}
         />
         <Tabs.Screen
-          name="store"
+          name="store/index"
           options={{
             title: "Store",
             tabBarIcon: ({ color, size }) => (
@@ -44,7 +43,16 @@ export default function ShellLayout() {
           }}
         />
         <Tabs.Screen
-          name="profile"
+          name="credits/index"
+          options={{
+            title: "Credits",
+            tabBarIcon: ({ color, size }) => (
+              <Wallet color={color} size={size ?? 22} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="profile/index"
           options={{
             title: "Profile",
             tabBarIcon: ({ color, size }) => (
@@ -52,13 +60,13 @@ export default function ShellLayout() {
             ),
           }}
         />
+        {/* Map route exists but no tab shown */}
+        <Tabs.Screen name="map/index" options={{ href: null }} />
       </Tabs>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
 });

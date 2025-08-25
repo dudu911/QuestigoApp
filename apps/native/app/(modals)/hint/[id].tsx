@@ -3,12 +3,13 @@ import { StyledView, StyledText, StyledButton } from "@repo/ui";
 
 export default function HintModal() {
   const { id } = useLocalSearchParams<{ id: string }>();
+
   return (
-    <StyledView flex padding="lg">
-      <StyledText size="xl" fontWeight="bold">
-        Hint
+    <StyledView flex padding="lg" backgroundColor="white">
+      <StyledText size="xl" fontWeight="bold" marginBottom="md">
+        💡 Hint
       </StyledText>
-      <StyledText>Showing hint for riddle {id}</StyledText>
+      <StyledText marginBottom="lg">Showing hint for riddle {id}</StyledText>
       <StyledButton variant="secondary" onPress={() => router.back()}>
         Close
       </StyledButton>

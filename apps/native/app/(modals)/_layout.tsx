@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { X } from "lucide-react-native";
+import { Pressable } from "react-native";
 import { router } from "expo-router";
 
 export default function ModalLayout() {
@@ -11,7 +12,7 @@ export default function ModalLayout() {
         headerTitleStyle: { fontWeight: "bold" },
         headerRight: () => (
           <Pressable onPress={() => router.back()} style={{ marginRight: 16 }}>
-            <Text style={{ color: "blue" }}>Close</Text>
+            <X size={22} color="black" />
           </Pressable>
         ),
       }}

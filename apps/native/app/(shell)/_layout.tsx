@@ -2,13 +2,14 @@ import { View, StyleSheet } from "react-native";
 import { Tabs } from "expo-router";
 import { MapCanvas } from "../../src/components/MapCanvas";
 import { Home, ShoppingCart, Wallet, User } from "lucide-react-native";
+import { LanguageToggle } from "../../src/components/LanguageToggle";
 
 export default function ShellLayout() {
   return (
     <View style={styles.container}>
       {/* Persistent background map */}
       <MapCanvas />
-
+      <LanguageToggle />
       <Tabs
         screenOptions={{
           headerShown: false,

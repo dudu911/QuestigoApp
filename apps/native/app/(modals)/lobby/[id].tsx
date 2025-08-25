@@ -12,7 +12,6 @@ export default function LobbyModal() {
       alignItems="center"
       backgroundColor="white"
       padding="lg"
-      style={{ borderRadius: 12 }}
     >
       <StyledText size="xl" fontWeight="bold" marginBottom="md">
         👥 Lobby: {id}

@@ -30,3 +30,10 @@ This Turborepo has some additional tools already setup for you:
 - [Expo](https://docs.expo.dev/) for native development
 - [TypeScript](https://www.typescriptlang.org/) for static type checking
 - [Prettier](https://prettier.io) for code formatting
+
+### seed
+
+DATABASE_URL=postgresql://postgres:Z0ltan%4077911977@db.jvmgetlrzhkbmbtshmxi.supabase.co:5432/postgres
+SUPABASE_URL=https://jvmgetlrzhkbmbtshmxi.supabase.co
+SUPABASE_ANON_KEY=yeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2bWdldGxyemhrYm1idHNobXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MDA5MDgsImV4cCI6MjA2Nzk3NjkwOH0.O_2sE-fUSZ53QMq_ITsyGEVxGKCVu2FlPs6-t-6p_DA
+npx ts-node scripts/seed.ts

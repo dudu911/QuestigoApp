@@ -372,5 +372,71 @@ createdAt DateTime @default(now())
 quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
 }
 
+Folder Layout
+
+apps/native/
+app/ # Expo Router navigation tree
+\_layout.tsx # Root providers (Redux, Query, i18n, Theme)
+index.tsx # Redirect to /home on startup
+
+    (shell)/                   # Main shell with persistent map + tabs
+      _layout.tsx              # Tabs: Home, Store, Credits, Profile
+      home/
+        index.tsx              # Quest discovery list
+      store/
+        index.tsx              # Store / Marketplace placeholder
+      credits/
+        index.tsx              # Credits balance + purchases
+      profile/
+        index.tsx              # Profile / settings
+      map/
+        index.tsx              # Optional standalone map (hidden tab)
+
+    (modals)/                  # Transparent modals layered on top
+      _layout.tsx              # Modal Stack
+      quest/
+        [id].tsx               # Quest details & riddles
+      lobby/
+        index.tsx              # Multiplayer lobby
+      hint/
+        index.tsx              # Riddle hint modal
+      settings/
+        index.tsx              # Settings modal
+
+    auth/                      # Auth flow (separate segment)
+      login.tsx
+      signup.tsx
+      forgot-password.tsx
+
+src/ # Core app logic
+components/ # Reusable UI building blocks
+BottomPanel.tsx
+MapCanvas.tsx
+redux/ # Redux Toolkit state
+store.ts # configureStore
+hooks.ts # typed hooks (useAppDispatch/useAppSelector)
+authSlice.ts
+questSlice.ts
+lobbySlice.ts
+creditsSlice.ts
+services/ # API + Supabase logic
+supabaseClient.ts
+queryWithSchema.ts
+mappers.ts
+authService.ts
+questService.ts
+lobbyService.ts
+paymentService.ts
+i18n/ # Translations setup
+index.ts
+en.json
+he.json
+utils/ # Shared helpers (if needed)
+
+packages/ui/ # Shared design system
+src/
+styled-components.tsx # StyledView, StyledText, StyledButton
+theme.ts # Tokens (colors, spacing, typography)
+
 _Last updated: August 24, 2025_
 _Project Status: Part 2 Complete ✅_

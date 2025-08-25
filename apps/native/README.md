@@ -149,7 +149,7 @@ import { I18nextProvider } from "react-i18next";
 import { ThemeProvider } from "@repo/ui";
 
 // App state management with Zustand
-import { useAppStore } from "./src/state/useAppStore";
+import { useAppStore } from "@redux/hooks";
 
 // Global state includes:
 // - activeQuestId: Current quest being played
@@ -161,7 +161,7 @@ import { useAppStore } from "./src/state/useAppStore";
 ### State Management
 
 ```tsx
-import { useAppStore, useAppActions } from "./src/state/useAppStore";
+import { useAppStore, useAppActions } from "@redux/hooks";
 
 // Access state
 const { activeQuestId, teamCode, locale } = useAppStore();

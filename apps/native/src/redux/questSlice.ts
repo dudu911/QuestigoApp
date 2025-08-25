@@ -1,14 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Quest, Riddle } from "@repo/types";
+import type { QuestUI, RiddleUI } from "@services/mappers";
 
 interface QuestState {
-  activeQuest: Quest | null; // ✅ Quest.created_at is Date
-  riddles: Riddle[]; // ✅ Riddle.created_at is Date
+  quests: QuestUI[];
+  activeQuest: QuestUI | null;
+  riddles: RiddleUI[];
   currentRiddleIndex: number;
   hintUsed: boolean;
 }
 
 const initialState: QuestState = {
+  quests: [],
   activeQuest: null,
   riddles: [],
   currentRiddleIndex: 0,
@@ -19,12 +21,15 @@ const questSlice = createSlice({
   name: "quest",
   initialState,
   reducers: {
-    setActiveQuest(state, action: PayloadAction<Quest | null>) {
+    setQuests(state, action: PayloadAction<QuestUI[]>) {
+      state.quests = action.payload;
+    },
+    setActiveQuest(state, action: PayloadAction<QuestUI | null>) {
       state.activeQuest = action.payload;
       state.currentRiddleIndex = 0;
       state.hintUsed = false;
     },
-    setRiddles(state, action: PayloadAction<Riddle[]>) {
+    setRiddles(state, action: PayloadAction<RiddleUI[]>) {
       state.riddles = action.payload;
     },
     nextRiddle(state) {
@@ -39,6 +44,6 @@ const questSlice = createSlice({
   },
 });
 
-export const { setActiveQuest, setRiddles, nextRiddle, useHint } =
+export const { setQuests, setActiveQuest, setRiddles, nextRiddle, useHint } =
   questSlice.actions;
 export default questSlice.reducer;

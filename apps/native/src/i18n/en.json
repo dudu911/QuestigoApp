@@ -71,5 +71,12 @@
     "minLength": "Minimum {{count}} characters required",
     "maxLength": "Maximum {{count}} characters allowed",
     "passwordMismatch": "Passwords do not match"
+  },
+  "countries": {
+    "IL": "Israel"
+  },
+  "cities": {
+    "jerusalem": "Jerusalem",
+    "tel_aviv": "Tel Aviv"
   }
 }

@@ -1,42 +1,63 @@
-import React from "react";
-import { FlatList, Pressable } from "react-native";
-import { StyledView, StyledText } from "@repo/ui";
-import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator } from "react-native";
+import { StyledView, StyledText, StyledButton } from "@repo/ui";
+import { fetchQuests } from "../../../src/services/questService";
+import { useAppDispatch } from "../../../src/redux/hooks";
+import { setQuests } from "../../../src/redux/questSlice";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../src/i18n";
 
-// Dummy quest data
-const quests = [
-  { id: "quest-1", title: "Berlin Adventure" },
-  { id: "quest-2", title: "Tel Aviv Quest" },
-];
+export default function QuestDiscoveryScreen() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
+  const dispatch = useAppDispatch();
 
-export default function HomeScreen() {
+  useEffect(() => {
+    const loadQuests = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchQuests();
+        dispatch(setQuests(data)); // ✅ push into Redux
+      } catch (err: any) {
+        console.error("Error fetching quests:", err);
+        setError(t("common.error"));
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadQuests();
+  }, []);
+
+  if (loading) {
+    return (
+      <StyledView flex alignItems="center" justifyContent="center">
+        <ActivityIndicator size="large" />
+        <StyledText>{t("common.loading")}</StyledText>
+      </StyledView>
+    );
+  }
+
+  if (error) {
+    return (
+      <StyledView flex alignItems="center" justifyContent="center">
+        <StyledText color="red">{error}</StyledText>
+      </StyledView>
+    );
+  }
+
   return (
-    <StyledView flex={1} padding="lg">
-      <StyledText size="xl" fontWeight="bold" marginBottom="lg">
-        🗺️ Quest Discovery
-      </StyledText>
+    <StyledView flex alignItems="center" justifyContent="center">
+      <StyledButton
+        onPress={() =>
+          i18n.changeLanguage(i18n.language === "en" ? "he" : "en")
+        }
+      >
+        Switch Language
+      </StyledButton>
 
-      <FlatList
-        data={quests}
-        keyExtractor={(q) => q.id}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => router.push(`/quest/${item.id}`)}
-            style={{
-              padding: 16,
-              backgroundColor: "white",
-              borderRadius: 8,
-              marginBottom: 12,
-              borderWidth: 1,
-              borderColor: "#ddd",
-            }}
-          >
-            <StyledText size="lg" fontWeight="medium">
-              {item.title}
-            </StyledText>
-          </Pressable>
-        )}
-      />
+      <StyledText>{t("quest.title")}</StyledText>
+      <StyledText>{t("navigation.quests")} loaded ✅</StyledText>
     </StyledView>
   );
 }

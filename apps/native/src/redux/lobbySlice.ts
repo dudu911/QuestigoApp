@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Lobby, Player } from "@repo/types";
+import { LobbyUI, PlayerUI } from "@services/mappers";
 
 interface LobbyState {
-  currentLobby: Lobby | null; // ✅ Lobby.createdAt is Date
-  players: Player[];
+  currentLobby: LobbyUI | null;
+  players: PlayerUI[];
   teamCode: string | null;
 }
 
@@ -17,14 +17,14 @@ const lobbySlice = createSlice({
   name: "lobby",
   initialState,
   reducers: {
-    setLobby(state, action: PayloadAction<Lobby | null>) {
+    setLobby(state, action: PayloadAction<LobbyUI | null>) {
       state.currentLobby = action.payload;
       state.teamCode = action.payload?.code ?? null;
     },
-    setPlayers(state, action: PayloadAction<Player[]>) {
+    setPlayers(state, action: PayloadAction<PlayerUI[]>) {
       state.players = action.payload;
     },
-    addPlayer(state, action: PayloadAction<Player>) {
+    addPlayer(state, action: PayloadAction<PlayerUI>) {
       state.players.push(action.payload);
     },
     removePlayer(state, action: PayloadAction<string>) {

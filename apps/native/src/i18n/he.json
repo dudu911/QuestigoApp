@@ -71,5 +71,12 @@
     "minLength": "נדרשים לפחות {{count}} תווים",
     "maxLength": "מותרים לכל היותר {{count}} תווים",
     "passwordMismatch": "הסיסמאות אינן תואמות"
+  },
+  "countries": {
+    "IL": "ישראל"
+  },
+  "cities": {
+    "jerusalem": "ירושלים",
+    "tel_aviv": "תל אביב"
   }
 }

@@ -1,8 +1,8 @@
 import { StatusBar } from "expo-status-bar";
 import { StyledView, StyledText, StyledButton, useTheme } from "@repo/ui";
-import { TypesDemo } from "../components/TypesDemo";
-import { ConfigDemo } from "../components/ConfigDemo";
-import { ProvidersDemo } from "../components/ProvidersDemo";
+import { TypesDemo } from "../src/dev/TypesDemo";
+import { ConfigDemo } from "../src/dev/ConfigDemo";
+import { ProvidersDemo } from "../src/dev/ProvidersDemo";
 import { Link } from "expo-router";
 import { ScrollView } from "react-native";
 

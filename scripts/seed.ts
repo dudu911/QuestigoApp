@@ -8,116 +8,184 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY! // server-only
 // Use service role client (bypasses RLS)
 const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
 
-async function main() {
-  // 1. Create a demo user
-  const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
-    email: "demo@test.com",
-    password: "demo1234",
+async function seed() {
+  // Create demo user (if not exists)
+  const { data: user } = await supabaseAdmin.auth.admin.createUser({
+    email: "demo@example.com",
+    password: "password123",
     email_confirm: true,
   })
-  if (userError) throw userError
 
-  const userId = userData.user?.id
-  if (!userId) throw new Error("Failed to create user")
+  const userId = user.user?.id
 
-  console.log("✅ Created user:", userId)
-
-  // 2. Insert profile
-  const { error: profileError } = await supabaseAdmin.from("profiles").insert({
-    id: userId,
-    username: "demo_user",
-    avatar_url: "https://i.pravatar.cc/150?img=5",
-    locale: "en",
-  })
-  if (profileError) throw profileError
-  console.log("✅ Inserted profile")
-
-  // 3. Insert quest
-  const { data: quest, error: questError } = await supabaseAdmin.from("quests").insert({
-    title: "Berlin Adventure",
-    description: "Solve riddles across Berlin landmarks",
-    city: "Berlin",
-    country: "Germany",
-    hero_image: "https://picsum.photos/600/400",
-    created_by: userId,
-  }).select().single()
-  if (questError) throw questError
-  console.log("✅ Inserted quest:", quest.id)
-
-  // 4. Insert riddles
-  const { error: riddlesError } = await supabaseAdmin.from("riddles").insert([
+  // Base quests with ISO country + i18n city keys
+  const quests = [
     {
-      quest_id: quest.id,
-      title: "Checkpoint Charlie",
-      prompt: "What historic barrier once stood here?",
-      image: "https://picsum.photos/200/150",
-      answer: "Berlin Wall",
-      hint: "Think Cold War",
-      latitude: 52.5076,
-      longitude: 13.3904,
-      radius_m: 30,
-      order_index: 1,
+      city: "jerusalem", // ✅ stored as i18n key
+      country: "IL",     // ✅ stored as ISO code
+      latitude: 31.781817132049294,
+      longitude: 35.218340753067416,
+      heroImage: "https://upload.wikimedia.org/wikipedia/commons/2/28/Midrachov_jerusalem_mozesy2.jpg",
+      translations: {
+        en: {
+          title: "Ben Yehuda Adventure",
+          description: "Explore the famous Ben Yehuda street with fun riddles.",
+        },
+        he: {
+          title: "הרפתקת בן יהודה",
+          description: "גלו את רחוב בן יהודה המפורסם עם חידות מהנות.",
+        },
+      },
     },
     {
-      quest_id: quest.id,
-      title: "Brandenburg Gate",
-      prompt: "This gate once divided a city. What is its name?",
-      image: "https://picsum.photos/200/150?2",
-      answer: "Brandenburg Gate",
-      hint: "Famous landmark",
-      latitude: 52.5163,
-      longitude: 13.3777,
-      radius_m: 30,
-      order_index: 2,
+      city: "tel_aviv",
+      country: "IL",
+      latitude: 32.099056731873475,
+      longitude: 34.77621753433228,
+      heroImage: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FTel_Aviv_Port&psig=AOvVaw3tSeaYrv9EryjRERgh0ShB&ust=1756207379170000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCPCWhcfspY8DFQAAAAAdAAAAABAE", 
+      translations: {
+        en: {
+          title: "Tel Aviv Harbor Mystery",
+          description: "Solve mysteries around the Tel Aviv Harbor.",
+        },
+        he: {
+          title: "תעלומת נמל תל אביב",
+          description: "פתרו חידות סביב נמל תל אביב.",
+        },
+      },
     },
-  ])
-  if (riddlesError) throw riddlesError
-  console.log("✅ Inserted riddles")
+    {
+      city: "jerusalem",
+      country: "IL",
+      latitude: 31.785738211826477,
+      longitude: 35.21224344921162,
+      heroImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Mahane_Yehuda_%28I%29_%2845298221191%29.jpg/330px-Mahane_Yehuda_%28I%29_%2845298221191%29.jpg",
+      translations: {
+        en: {
+          title: "Mahane Yehuda Market Challenge",
+          description: "Discover secrets hidden in Mahane Yehuda Market.",
+        },
+        he: {
+          title: "אתגר שוק מחנה יהודה",
+          description: "גלו סודות חבויים בשוק מחנה יהודה.",
+        },
+      },
+    },
+    {
+      city: "jerusalem",
+      country: "IL",
+      latitude: 31.801401531841385,
+      longitude: 35.161203252557094,
+      heroImage:"",
+      translations: {
+        en: {
+          title: "Dudu's House",
+          description: "A quirky quest starting at Dudu’s house.",
+        },
+        he: {
+          title: "הבית של דודו",
+          description: "משימה מיוחדת שמתחילה בבית של דודו.",
+        },
+      },
+    },
+  ]
 
-  // 5. Insert lobby
-  const { data: lobby, error: lobbyError } = await supabaseAdmin.from("lobbies").insert({
-    code: "DEMO1234",
-    host_id: userId,
-    quest_id: quest.id,
-    status: "waiting",
-  }).select().single()
-  if (lobbyError) throw lobbyError
-  console.log("✅ Inserted lobby:", lobby.id)
+  for (const quest of quests) {
+    // Insert quest base row
+    const { data: questRow, error: questErr } = await supabaseAdmin
+      .from("quests")
+      .insert({
+        created_by: userId,
+        city: quest.city,
+        country: quest.country,
+        latitude: quest.latitude,
+        longitude: quest.longitude,
+        hero_image: quest.heroImage ?? "", // ✅ optional
 
-  // 6. Add user to lobby_players
-  const { error: playerError } = await supabaseAdmin.from("lobby_players").insert({
-    lobby_id: lobby.id,
-    player_id: userId,
-    is_host: true,
-    is_ready: false,
-  })
-  if (playerError) throw playerError
-  console.log("✅ Added user to lobby_players")
+      })
+      .select()
+      .single()
 
-  // 7. Seed user credits 💰
-  const { error: creditsError } = await supabaseAdmin.from("user_credits").upsert({
-    user_id: userId,
-    balance: 100, // give demo user 100 credits
-    updated_at: new Date().toISOString(),
-  })
-  if (creditsError) throw creditsError
-  console.log("✅ Seeded user credits (100)")
+    if (questErr) throw questErr
+    const questId = questRow.id
 
-  // 8. Insert a purchase record
-  const { error: purchaseError } = await supabaseAdmin.from("purchases").insert({
-    user_id: userId,
-    package_id: "CREDITS_100",
-    credits: 100,
-    amount: 5.00,
-    currency: "USD",
-  })
-  if (purchaseError) throw purchaseError
-  console.log("✅ Inserted purchase record (100 credits for $5)")
+    // Insert translations
+    await supabaseAdmin.from("quest_translations").insert([
+      { quest_id: questId, locale: "en", ...quest.translations.en },
+      { quest_id: questId, locale: "he", ...quest.translations.he },
+    ])
 
-  console.log("🎉 Seed complete!")
+    // Insert riddles (2 per quest)
+    const riddles = [
+      {
+        latitude: quest.latitude + 0.0005,
+        longitude: quest.longitude + 0.0005,
+        order_index: 1,
+        image: null,
+        translations: {
+          en: {
+            title: "Find the Sign",
+            prompt: "Look around for a blue street sign. What number is on it?",
+            hint: "It’s near the main corner.",
+          },
+          he: {
+            title: "מצאו את השלט",
+            prompt: "חפשו שלט רחוב כחול. איזה מספר מופיע עליו?",
+            hint: "זה ליד הפינה הראשית.",
+          },
+        },
+      },
+      {
+        latitude: quest.latitude - 0.0005,
+        longitude: quest.longitude - 0.0005,
+        order_index: 2,
+        image: null,
+        translations: {
+          en: {
+            title: "Smell the Market",
+            prompt: "Which spice has the strongest smell nearby?",
+            hint: "Think of something yellow.",
+          },
+          he: {
+            title: "ריח השוק",
+            prompt: "איזה תבלין מריח הכי חזק בסביבה?",
+            hint: "חשבו על משהו צהוב.",
+          },
+        },
+      },
+    ]
+
+    for (const riddle of riddles) {
+      const { data: riddleRow, error: riddleErr } = await supabaseAdmin
+        .from("riddles")
+        .insert({
+          quest_id: questId,
+          latitude: riddle.latitude,
+          longitude: riddle.longitude,
+          order_index: riddle.order_index,
+          image: riddle.image ?? null, // ✅ can be seeded or left null
+        })
+        .select()
+        .single()
+
+      if (riddleErr) throw riddleErr
+      const riddleId = riddleRow.id
+
+      await supabaseAdmin.from("riddle_answers").insert([
+        { riddle_id: riddleId, answer: "42", is_correct: true }
+      ])
+
+      await supabaseAdmin.from("riddle_translations").insert([
+        { riddle_id: riddleId, locale: "en", ...riddle.translations.en },
+        { riddle_id: riddleId, locale: "he", ...riddle.translations.he },
+      ])
+    }
+  }
+
+  console.log("✅ Seed complete with Israel quests + riddles, using ISO country + i18n city keys")
 }
 
-main().catch((err) => {
-  console.error("❌ Seeding failed:", err)
+seed().catch((e) => {
+  console.error(e)
   process.exit(1)
 })

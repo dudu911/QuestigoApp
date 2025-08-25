@@ -52,11 +52,11 @@ export default function CreditsScreen() {
               }}
             >
               <StyledText size="lg" fontWeight="medium">
-                {item.package_id} – {item.credits} credits
+                {item.packageId} – {item.credits} credits
               </StyledText>
               <StyledText size="sm" color="gray">
                 {item.amount} {item.currency} •{" "}
-                {item.created_at.toLocaleString()}
+                {item.createdAt.toLocaleString()}
               </StyledText>
             </StyledView>
           )}

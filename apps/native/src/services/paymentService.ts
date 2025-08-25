@@ -1,24 +1,42 @@
 import { queryWithSchema } from "./queryWithSchema";
-import { PurchaseSchema, UserCreditsSchema } from "@repo/types";
+import { UserCreditsSchema, PurchaseSchema } from "@repo/types";
+import {
+  mapCreditsToUI,
+  mapPurchaseToUI,
+  UserCreditsUI,
+  PurchaseUI,
+} from "./mappers";
 import { supabase } from "./supabaseClient";
 
-// Fetch current balance
-export async function fetchUserCredits(userId: string) {
-  return queryWithSchema("user_credits", UserCreditsSchema, (q) =>
-    q.eq("user_id", userId),
+// Fetch user credits balance
+export async function fetchUserCredits(
+  userId: string,
+): Promise<UserCreditsUI[]> {
+  const credits = await queryWithSchema(
+    "user_credits",
+    UserCreditsSchema,
+    (q) => q.eq("user_id", userId),
+  );
+  return credits.map((c) =>
+    mapCreditsToUI({ ...c, balance: c.balance !== undefined ? c.balance : 0 }),
   );
 }
 
 // Fetch purchase history
-export async function fetchPurchases(userId: string) {
-  return queryWithSchema("purchases", PurchaseSchema, (q) =>
-    q.eq("user_id", userId),
+export async function fetchPurchases(userId: string): Promise<PurchaseUI[]> {
+  const purchases = await queryWithSchema("purchases", PurchaseSchema, (q) =>
+    q.eq("user_id", userId).order("created_at", { ascending: false }),
+  );
+  return purchases.map((p) =>
+    mapPurchaseToUI({
+      ...p,
+      currency: p.currency !== undefined ? p.currency : "USD",
+    }),
   );
 }
 
-// Example placeholder for initiating a purchase flow
+// Stub for purchase (edge function later)
 export async function purchaseCredits(userId: string, packageId: string) {
-  // Likely calls a Supabase Edge Function or backend endpoint
   const { data, error } = await supabase.functions.invoke("purchase-credits", {
     body: { userId, packageId },
   });

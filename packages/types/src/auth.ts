@@ -5,7 +5,7 @@ export const ProfileSchema = z.object({
   username: z.string().nullable().optional(),
   avatar_url: z.string().url().nullable().optional(),
   locale: z.enum(["en", "he"]).default("en"),
-  created_at: z.coerce.date(), // ✅ coercion
+  created_at: z.coerce.date(),
 });
 
 export type Profile = z.infer<typeof ProfileSchema>;

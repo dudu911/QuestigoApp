@@ -1,92 +1,47 @@
-import { View, StyleSheet, Platform, Text } from "react-native";
-import { useEffect, useState } from "react";
+import React from "react";
+import MapView, { Marker } from "react-native-maps";
+import { useAppSelector } from "../redux/hooks";
+import { RootState } from "../redux/store";
+import { useTranslation } from "react-i18next";
+import { router } from "expo-router";
 
 export function MapCanvas() {
-  const [googleLoaded, setGoogleLoaded] = useState(false);
+  const quests = useAppSelector((state: RootState) => state.quest.quests);
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language.startsWith("he") ? "he" : "en";
 
-  useEffect(() => {
-    if (Platform.OS === "web") {
-      if (window.google) {
-        setGoogleLoaded(true);
-      } else {
-        const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_WEB}`;
-        script.async = true;
-        script.onload = () => setGoogleLoaded(true);
-        document.head.appendChild(script);
-      }
-    }
-  }, []);
+  return (
+    <MapView
+      style={{ flex: 1 }}
+      //provider="google"
+      initialRegion={{
+        latitude: 31.78, // Default center (Jerusalem)
+        longitude: 35.21,
+        latitudeDelta: 1.5,
+        longitudeDelta: 1.5,
+      }}
+    >
+      {quests.map((q) => {
+        const tr =
+          q.translations.find((tr) => tr.locale === locale) ??
+          q.translations[0];
 
-  if (Platform.OS === "web") {
-    if (!googleLoaded) {
-      return <Text>Loading Google Maps...</Text>;
-    }
+        if (!q.latitude || !q.longitude) return null;
 
-    const GoogleMap = require("react-native-web-maps").default;
-
-    return (
-      <View style={styles.container}>
-        <GoogleMap
-          initialRegion={{
-            latitude: 32.0853,
-            longitude: 34.7818,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }}
-          style={{ width: "100%", height: 400 }}
-        />
-      </View>
-    );
-  }
-
-  try {
-    const MapViewModule = require("react-native-maps");
-    const MapView = MapViewModule.default || MapViewModule;
-
-    return (
-      <View style={styles.container}>
-        <MapView
-          style={StyleSheet.absoluteFill}
-          initialRegion={{
-            latitude: 32.0853,
-            longitude: 34.7818,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }}
-          mapType="standard"
-        />
-      </View>
-    );
-  } catch (e) {
-    console.log("MapCanvas error:", e);
-    return (
-      <View style={[styles.container, styles.fallback]}>
-        <Text style={styles.fallbackText}>Loading map...</Text>
-      </View>
-    );
-  }
+        return (
+          <Marker
+            key={q.id}
+            coordinate={{
+              latitude: q.latitude,
+              longitude: q.longitude,
+            }}
+            title={tr?.title ?? "Untitled Quest"}
+            description={`${t(`cities.${q.cityKey}`)}, ${t(`countries.${q.countryCode}`)}`}
+            pinColor="blue"
+            onPress={() => router.push(`/quest/${q.id}`)} // ✅ navigate to quest modal
+          />
+        );
+      })}
+    </MapView>
+  );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000" },
-  fallback: { justifyContent: "center", alignItems: "center", padding: 20 },
-  fallbackText: {
-    color: "#fff",
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
-  },
-  webFallback: {
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    padding: 20,
-  },
-  webFallbackText: {
-    color: "#333",
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
-  },
-});

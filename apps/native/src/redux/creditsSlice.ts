@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Purchase } from "@repo/types";
+import { PurchaseUI } from "@services/mappers";
 
 interface CreditsState {
   balance: number;
   loading: boolean;
-  purchases: Purchase[]; // ✅ Purchase.created_at is Date
+  purchases: PurchaseUI[];
 }
 
 const initialState: CreditsState = {
@@ -29,7 +29,7 @@ const creditsSlice = createSlice({
     setLoading(state, action: PayloadAction<boolean>) {
       state.loading = action.payload;
     },
-    setPurchases(state, action: PayloadAction<Purchase[]>) {
+    setPurchases(state, action: PayloadAction<PurchaseUI[]>) {
       state.purchases = action.payload;
     },
   },

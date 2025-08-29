@@ -30,7 +30,10 @@
     "location": "מיקום",
     "distance": "מרחק",
     "nearby": "אתה קרוב!",
-    "tooFar": "אתה רחוק מדי מהמיקום"
+    "tooFar": "אתה רחוק מדי מהמיקום",
+    "noRiddlesFound": "לא נמצאו חידות.",
+    "showHint": "הצג רמז",
+    "noHint": "אין רמז"
   },
   "team": {
     "title": "צוות",

@@ -53,7 +53,7 @@ async function fetchQuestWithRiddles(id: string): Promise<{
 
 export default function QuestModal() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const locale = i18n.language.startsWith("he") ? "he" : "en";
 
   const dispatch = useAppDispatch();
@@ -163,7 +163,9 @@ export default function QuestModal() {
             onPress={() => dispatch(setHintUsed())}
             style={{ marginBottom: 8 }}
           >
-            {hintUsed ? (currentRiddle.hint ?? "No hint") : "Show Hint"}
+            {hintUsed
+              ? (currentRiddle.hint ?? t("quest.noHint"))
+              : t("quest.showHint")}
           </StyledButton>
 
           <StyledButton
@@ -181,7 +183,7 @@ export default function QuestModal() {
           </StyledButton>
         </>
       ) : (
-        <StyledText>No riddles found.</StyledText>
+        <StyledText>{t("quest.noRiddlesFound")}</StyledText>
       )}
 
       <StyledButton
@@ -189,7 +191,7 @@ export default function QuestModal() {
         onPress={() => router.back()}
         style={{ marginTop: 16 }}
       >
-        Close
+        {t("common.close")}
       </StyledButton>
     </StyledView>
   );

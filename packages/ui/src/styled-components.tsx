@@ -8,6 +8,7 @@ import {
   PressableProps,
 } from "react-native";
 import { theme } from "./theme";
+import { useDirection } from "../../../apps/native/src/i18n/DirectionProvider";
 
 //
 // 🔹 StyledView
@@ -32,6 +33,7 @@ interface StyledViewProps {
   // Visuals
   backgroundColor?: string;
   style?: ViewStyle;
+  row?: boolean;
 }
 
 export const StyledView: React.FC<StyledViewProps> = ({
@@ -48,10 +50,13 @@ export const StyledView: React.FC<StyledViewProps> = ({
   marginRight,
   backgroundColor,
   style,
+
   ...props
 }) => {
+  const dir = useDirection();
   const viewStyle: ViewStyle = {
     ...(flex !== undefined && { flex: typeof flex === "boolean" ? 1 : flex }),
+    // flexDirection: dir === "rtl" ? "row-reverse" : "row",
     ...(flexDirection && { flexDirection }),
     ...(alignItems && { alignItems }),
     ...(justifyContent && { justifyContent }),
@@ -75,13 +80,14 @@ export const StyledView: React.FC<StyledViewProps> = ({
 //
 // 🔹 StyledText
 //
+
 interface StyledTextProps {
   children: React.ReactNode;
   size?: keyof typeof theme.typography;
   color?: string;
   fontWeight?: TextStyle["fontWeight"];
   marginBottom?: keyof typeof theme.spacing;
-  textAlign?: TextStyle["textAlign"]; // ✅ NEW
+  textAlign?: TextStyle["textAlign"]; // 👈 new
   style?: TextStyle;
 }
 
@@ -95,12 +101,14 @@ export const StyledText: React.FC<StyledTextProps> = ({
   style,
   ...props
 }) => {
+  const dir = useDirection();
+
   const textStyle: TextStyle = {
     fontSize: theme.typography[size],
     color,
+    textAlign: textAlign ?? (dir === "rtl" ? "right" : "left"),
     ...(fontWeight && { fontWeight }),
     ...(marginBottom && { marginBottom: theme.spacing[marginBottom] }),
-    ...(textAlign && { textAlign }), // ✅ NEW
     ...style,
   };
 
@@ -122,6 +130,7 @@ interface StyledButtonProps extends PressableProps {
 
 export const StyledButton = React.forwardRef<View, StyledButtonProps>(
   ({ children, variant = "primary", size = "md", ...props }, ref) => {
+    const dir = useDirection();
     const buttonStyle: ViewStyle = {
       paddingHorizontal:
         size === "sm"
@@ -147,6 +156,7 @@ export const StyledButton = React.forwardRef<View, StyledButtonProps>(
         variant === "primary" ? theme.colors.white : theme.colors.gray[800],
       fontSize: theme.typography.base,
       fontWeight: "600",
+      textAlign: dir === "rtl" ? "right" : "left",
     };
 
     return (

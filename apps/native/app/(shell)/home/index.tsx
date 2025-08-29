@@ -1,18 +1,17 @@
 import React from "react";
 import {
   View,
-  Text,
   ActivityIndicator,
   FlatList,
   Pressable,
   RefreshControl,
 } from "react-native";
+import { StyledText } from "@repo/ui";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../../src/services/supabaseClient";
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
 import { mapQuestRowToUI, QuestRow } from "../../../src/mappers/questMapper";
-import { isRTL } from "../../../src/i18n/config";
 
 async function fetchQuests(): Promise<QuestRow[]> {
   const { data, error } = await supabase.from("quests").select(`
@@ -29,12 +28,7 @@ async function fetchQuests(): Promise<QuestRow[]> {
 
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
-  const [rtl, setRtl] = React.useState(isRTL(i18n.language));
   const locale = i18n.language.startsWith("he") ? "he" : "en";
-
-  React.useEffect(() => {
-    setRtl(isRTL(i18n.language));
-  }, [i18n.language]);
 
   const {
     data: questRows = [],
@@ -60,9 +54,7 @@ export default function HomeScreen() {
         }}
       >
         <ActivityIndicator />
-        <Text style={{ textAlign: rtl ? "right" : "left" }}>
-          {t("common.loading")}
-        </Text>
+        <StyledText>{t("common.loading")}</StyledText>
       </View>
     );
   }
@@ -76,9 +68,7 @@ export default function HomeScreen() {
           alignItems: "center",
         }}
       >
-        <Text style={{ textAlign: rtl ? "right" : "left" }}>
-          {t("common.error")}
-        </Text>
+        <StyledText>{t("common.error")}</StyledText>
       </View>
     );
   }
@@ -101,18 +91,10 @@ export default function HomeScreen() {
               borderBottomColor: "#ddd",
             }}
           >
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "bold",
-                textAlign: rtl ? "right" : "left",
-              }}
-            >
+            <StyledText size="xl" fontWeight="bold">
               {item.title}
-            </Text>
-            <Text style={{ textAlign: rtl ? "right" : "left" }}>
-              {item.description}
-            </Text>
+            </StyledText>
+            <StyledText>{item.description}</StyledText>
           </Pressable>
         )}
       />

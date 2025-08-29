@@ -1,116 +1,195 @@
 import React, { useEffect, useState } from "react";
-import { FlatList, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { StyledView, StyledText, StyledButton } from "@repo/ui";
+import * as Location from "expo-location";
+import { useAppSelector, useAppDispatch } from "@redux/hooks";
+
+import { RootState } from "../../../src/redux/store";
 import {
-  fetchQuestById,
-  fetchRiddlesForQuest,
-} from "../../../src/services/questService";
-import type { QuestUI, RiddleUI } from "../../../src/services/mappers";
-import { useAppDispatch } from "../../../src/redux/hooks";
-import { setActiveQuest, setRiddles } from "../../../src/redux/questSlice";
+  setActiveQuestId,
+  nextRiddle,
+  setHintUsed,
+} from "../../../src/redux/questSlice";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "../../../src/services/supabaseClient";
+import { getDistanceFromLatLonInM } from "../../../src/utils/geo";
+import { mapRiddleRowToUI, RiddleRow } from "../../../src/mappers/riddleMapper";
+import { mapQuestRowToUI, QuestRow } from "../../../src/mappers/questMapper";
 import { useTranslation } from "react-i18next";
+
+// --- Query functions ---
+async function fetchQuestWithRiddles(id: string): Promise<{
+  quest: QuestRow;
+  riddles: RiddleRow[];
+}> {
+  const { data, error } = await supabase
+    .from("quests")
+    .select(
+      `
+      id,
+      country,
+      city,
+      quest_translations (*),
+      riddles (
+        id,
+        quest_id,
+        latitude,
+        longitude,
+        radius_m,
+        image,
+        riddle_translations (*)
+      )
+    `,
+    )
+    .eq("id", id)
+    .single();
+
+  if (error || !data) throw error ?? new Error("Quest not found");
+  return {
+    quest: data as unknown as QuestRow,
+    riddles: (data.riddles ?? []) as RiddleRow[],
+  };
+}
 
 export default function QuestModal() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const locale = i18n.language.startsWith("he") ? "he" : "en";
 
-  const [quest, setQuest] = useState<QuestUI | null>(null);
-  const [riddles, setRiddlesLocal] = useState<RiddleUI[]>([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useAppDispatch();
+  const riddleIndex = useAppSelector(
+    (s: RootState) => s.quest.currentRiddleIndex,
+  );
+  const hintUsed = useAppSelector((s: RootState) => s.quest.hintUsed);
 
+  const [userCoords, setUserCoords] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [distance, setDistance] = useState<number | null>(null);
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["quest", id],
+    queryFn: () => fetchQuestWithRiddles(id!),
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const quest = data ? mapQuestRowToUI(data.quest, locale) : null;
+  const riddles = data
+    ? data.riddles.map((r) => mapRiddleRowToUI(r, locale))
+    : [];
+
+  // Track active quest id
   useEffect(() => {
-    if (!id) return;
-
-    const loadQuest = async () => {
-      try {
-        setLoading(true);
-
-        const questData = await fetchQuestById(id);
-        setQuest(questData);
-        dispatch(setActiveQuest(questData));
-
-        const riddlesData = await fetchRiddlesForQuest(id);
-        setRiddlesLocal(riddlesData);
-        dispatch(setRiddles(riddlesData));
-      } catch (err) {
-        console.error("Error loading quest:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadQuest();
+    if (id) dispatch(setActiveQuestId(id));
   }, [id]);
 
-  if (loading) {
+  // Get user location
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === "granted") {
+        const loc = await Location.getCurrentPositionAsync({});
+        setUserCoords({ lat: loc.coords.latitude, lng: loc.coords.longitude });
+      }
+    })();
+  }, []);
+
+  // Compute distance
+  useEffect(() => {
+    if (userCoords && riddles.length > 0) {
+      const r = riddles[riddleIndex];
+      if (r) {
+        const d = getDistanceFromLatLonInM(
+          userCoords.lat,
+          userCoords.lng,
+          r.latitude,
+          r.longitude,
+        );
+        setDistance(d);
+      }
+    }
+  }, [userCoords, riddles, riddleIndex]);
+
+  if (isLoading) {
     return (
-      <StyledView flex alignItems="center" justifyContent="center">
-        <ActivityIndicator size="large" />
-        <StyledText>{t("common.loading")}</StyledText>
+      <StyledView flex padding="lg">
+        <StyledText>Loading quest…</StyledText>
       </StyledView>
     );
   }
 
-  if (!quest) {
+  if (isError || !quest) {
     return (
-      <StyledView flex alignItems="center" justifyContent="center">
-        <StyledText>{t("common.error")}</StyledText>
+      <StyledView flex padding="lg">
+        <StyledText>Error loading quest.</StyledText>
         <StyledButton variant="secondary" onPress={() => router.back()}>
-          {t("common.close")}
+          Close
         </StyledButton>
       </StyledView>
     );
   }
 
-  // Pick localized quest translation
-  const questTr =
-    quest.translations.find((tr) => tr.locale === locale) ??
-    quest.translations[0];
+  const currentRiddle = riddles[riddleIndex];
+  const insideGeofence =
+    distance !== null && currentRiddle && distance <= currentRiddle.radius + 50;
 
   return (
     <StyledView flex padding="lg" backgroundColor="white">
-      <StyledText size="xl" fontWeight="bold" marginBottom="sm">
-        {questTr?.title ?? "Untitled Quest"}
-      </StyledText>
-      <StyledText size="sm" marginBottom="lg">
-        {questTr?.description ?? ""}
+      <StyledText size="xl" fontWeight="bold" marginBottom="md">
+        {quest.title}
       </StyledText>
 
-      <FlatList
-        data={riddles}
-        keyExtractor={(r) => r.id}
-        renderItem={({ item }) => {
-          const riddleTr =
-            item.translations.find((tr) => tr.locale === locale) ??
-            item.translations[0];
+      {currentRiddle ? (
+        <>
+          <StyledText size="lg" marginBottom="sm">
+            {currentRiddle.prompt}
+          </StyledText>
 
-          return (
-            <StyledView
-              padding="md"
-              marginBottom="sm"
-              style={{ borderWidth: 1, borderColor: "#ddd", borderRadius: 8 }}
-            >
-              <StyledText fontWeight="bold">{riddleTr?.title}</StyledText>
-              <StyledText>{riddleTr?.prompt}</StyledText>
-              {riddleTr?.hint && (
-                <StyledText size="sm" color="gray">
-                  💡 {riddleTr.hint}
-                </StyledText>
-              )}
+          {currentRiddle.image && (
+            <StyledView margin="md">
+              <StyledText>(Image: {currentRiddle.image})</StyledText>
             </StyledView>
-          );
-        }}
-      />
+          )}
+
+          <StyledText marginBottom="sm">
+            Distance: {distance ? `${distance.toFixed(0)}m` : "Unknown"}
+          </StyledText>
+
+          <StyledButton
+            variant="secondary"
+            disabled={!insideGeofence}
+            onPress={() => dispatch(setHintUsed())}
+            style={{ marginBottom: 8 }}
+          >
+            {hintUsed ? (currentRiddle.hint ?? "No hint") : "Show Hint"}
+          </StyledButton>
+
+          <StyledButton
+            variant="primary"
+            disabled={!insideGeofence}
+            onPress={() => {
+              if (riddleIndex < riddles.length - 1) {
+                dispatch(nextRiddle());
+              } else {
+                router.replace("/home");
+              }
+            }}
+          >
+            {riddleIndex < riddles.length - 1 ? "Next Riddle" : "Finish Quest"}
+          </StyledButton>
+        </>
+      ) : (
+        <StyledText>No riddles found.</StyledText>
+      )}
 
       <StyledButton
-        variant="primary"
-        onPress={() => router.push(`/lobby/${quest.id}-lobby`)}
+        variant="secondary"
+        onPress={() => router.back()}
         style={{ marginTop: 16 }}
       >
-        {t("quest.start")}
+        Close
       </StyledButton>
     </StyledView>
   );

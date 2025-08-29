@@ -1,13 +1,22 @@
 import { queryWithSchema, singleWithSchema } from "./queryWithSchema";
 import { QuestSchema, Riddle, RiddleSchema } from "@repo/types";
 import { mapQuestToUI, mapRiddleToUI, QuestUI, RiddleUI } from "./mappers";
+import type { QuestRow } from "../mappers/questMapper";
+import { supabase } from "./supabaseClient";
 
 // ✅ Fetch all quests → UI-friendly type
-export async function fetchQuests(): Promise<QuestUI[]> {
-  const quests = await queryWithSchema("quests", QuestSchema, (q) =>
-    q.select("*, translations:quest_translations(*)"),
-  );
-  return quests.map(mapQuestToUI);
+export async function fetchQuests(): Promise<QuestRow[]> {
+  const { data, error } = await supabase.from("quests").select(`
+      id,
+      latitude,
+      longitude,
+      country,
+      city,
+      quest_translations (*)
+    `);
+
+  if (error) throw error;
+  return data as QuestRow[];
 }
 
 // ✅ Fetch single quest by id

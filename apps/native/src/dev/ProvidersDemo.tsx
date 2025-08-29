@@ -12,7 +12,7 @@ export function ProvidersDemo() {
 
   // Use Redux selectors
   const activeQuestId = useAppSelector(
-    (state: RootState) => state.quest.activeQuest?.id,
+    (state: RootState) => state.quest.activeQuestId,
   );
   const teamCode = useAppSelector((state: RootState) => state.lobby.teamCode);
   const locale = useAppSelector((state: RootState) => state.auth.locale);

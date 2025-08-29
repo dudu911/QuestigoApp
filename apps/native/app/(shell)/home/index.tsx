@@ -1,63 +1,87 @@
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator } from "react-native";
-import { StyledView, StyledText, StyledButton } from "@repo/ui";
-import { fetchQuests } from "../../../src/services/questService";
-import { useAppDispatch } from "../../../src/redux/hooks";
-import { setQuests } from "../../../src/redux/questSlice";
+import React from "react";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+} from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "../../../src/services/supabaseClient";
 import { useTranslation } from "react-i18next";
-import i18n from "../../../src/i18n";
+import { router } from "expo-router";
+import { mapQuestRowToUI, QuestRow } from "../../../src/mappers/questMapper";
 
-export default function QuestDiscoveryScreen() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { t } = useTranslation();
-  const dispatch = useAppDispatch();
+async function fetchQuests(): Promise<QuestRow[]> {
+  const { data, error } = await supabase.from("quests").select(`
+      id,
+      latitude,
+      longitude,
+      country,
+      city,
+      quest_translations (*)
+    `);
+  if (error) throw error;
+  return data as QuestRow[];
+}
 
-  useEffect(() => {
-    const loadQuests = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchQuests();
-        dispatch(setQuests(data)); // ✅ push into Redux
-      } catch (err: any) {
-        console.error("Error fetching quests:", err);
-        setError(t("common.error"));
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadQuests();
-  }, []);
+export default function HomeScreen() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language.startsWith("he") ? "he" : "en";
 
-  if (loading) {
+  const {
+    data: questRows = [],
+    isLoading,
+    isError,
+    refetch,
+    isFetching,
+  } = useQuery({
+    queryKey: ["quests"],
+    queryFn: fetchQuests,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const quests = questRows.map((q) => mapQuestRowToUI(q, locale));
+
+  if (isLoading) {
     return (
-      <StyledView flex alignItems="center" justifyContent="center">
-        <ActivityIndicator size="large" />
-        <StyledText>{t("common.loading")}</StyledText>
-      </StyledView>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator />
+        <Text>{t("common.loading")}</Text>
+      </View>
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
-      <StyledView flex alignItems="center" justifyContent="center">
-        <StyledText color="red">{error}</StyledText>
-      </StyledView>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>{t("common.error")}</Text>
+      </View>
     );
   }
 
   return (
-    <StyledView flex alignItems="center" justifyContent="center">
-      <StyledButton
-        onPress={() =>
-          i18n.changeLanguage(i18n.language === "en" ? "he" : "en")
-        }
-      >
-        Switch Language
-      </StyledButton>
-
-      <StyledText>{t("quest.title")}</StyledText>
-      <StyledText>{t("navigation.quests")} loaded ✅</StyledText>
-    </StyledView>
+    <FlatList
+      data={quests}
+      keyExtractor={(item) => item.id}
+      refreshControl={
+        <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+      }
+      contentContainerStyle={{ paddingBottom: 36 }} // or a larger value if needed
+      renderItem={({ item }) => (
+        <Pressable
+          onPress={() => router.push(`/quest/${item.id}`)}
+          style={{
+            padding: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: "#ddd",
+          }}
+        >
+          <Text style={{ fontSize: 18, fontWeight: "bold" }}>{item.title}</Text>
+          <Text>{item.description}</Text>
+        </Pressable>
+      )}
+    />
   );
 }

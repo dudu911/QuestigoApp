@@ -1,18 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, StyleSheet, Text, Platform } from "react-native";
-import { useAppSelector } from "../redux/hooks";
-import { RootState } from "../redux/store";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
+import { fetchQuests } from "../services/questService";
+import { mapQuestRowToUI, QuestRow } from "../mappers/questMapper";
 
 export function MapCanvas() {
   const [googleLoaded, setGoogleLoaded] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
-  const quests = useAppSelector((state: RootState) => state.quest.quests);
+
+  const { data: questRows = [], isLoading } = useQuery<QuestRow[]>({
+    queryKey: ["quests"],
+    queryFn: fetchQuests,
+    staleTime: 1000 * 60 * 5,
+  });
+
   const { i18n } = useTranslation();
   const locale = i18n.language.startsWith("he") ? "he" : "en";
+  const quests = questRows.map((q) => mapQuestRowToUI(q, locale));
 
-  // ✅ Hook always runs, no matter what
+  // Load Google Maps script on web
   useEffect(() => {
     if (Platform.OS === "web") {
       if (window.google) {
@@ -27,7 +35,7 @@ export function MapCanvas() {
     }
   }, []);
 
-  // ✅ Another hook, always runs, just early exit if not ready
+  // Place markers on web map
   useEffect(() => {
     if (Platform.OS === "web" && googleLoaded && mapRef.current) {
       const map = new window.google.maps.Map(mapRef.current, {
@@ -38,13 +46,10 @@ export function MapCanvas() {
       const bounds = new window.google.maps.LatLngBounds();
 
       quests.forEach((q) => {
-        const tr =
-          q.translations.find((t) => t.locale === locale) ?? q.translations[0];
-
         const marker = new window.google.maps.Marker({
-          position: { lat: q.latitude ?? 0, lng: q.longitude ?? 0 },
+          position: { lat: q.latitude, lng: q.longitude },
           map,
-          title: tr?.title ?? "Quest",
+          title: q.title,
         });
 
         marker.addListener("click", () => router.push(`/quest/${q.id}`));
@@ -55,21 +60,23 @@ export function MapCanvas() {
         map.fitBounds(bounds);
       }
     }
-  }, [googleLoaded, quests, locale]);
+  }, [googleLoaded, quests]);
 
-  // ✅ Render branch
+  // Render branch
   if (Platform.OS === "web") {
-    if (!googleLoaded) {
+    if (!googleLoaded || isLoading) {
       return (
         <View style={styles.webFallback}>
           <Text style={styles.webFallbackText}>Loading Google Maps…</Text>
         </View>
       );
     }
-    return <div ref={mapRef} style={{ flex: 1, minHeight: "100vh" }} />;
+    return (
+      <div ref={mapRef} style={{ flex: 1, width: "100%", height: "100%" }} />
+    );
   }
 
-  // ✅ Native fallback
+  // Native (react-native-maps)
   const MapViewModule = require("react-native-maps");
   const MapView = MapViewModule.default || MapViewModule;
   const Marker = MapViewModule.Marker || MapViewModule.default.Marker;
@@ -85,21 +92,16 @@ export function MapCanvas() {
           longitudeDelta: 1.5,
         }}
       >
-        {quests.map((q) => {
-          const tr =
-            q.translations.find((t) => t.locale === locale) ??
-            q.translations[0];
-          return (
-            <Marker
-              key={q.id}
-              coordinate={{ latitude: q.latitude, longitude: q.longitude }}
-              title={tr?.title ?? "Quest"}
-              description={tr?.description ?? ""}
-              pinColor="blue"
-              onPress={() => router.push(`/quest/${q.id}`)}
-            />
-          );
-        })}
+        {quests.map((q) => (
+          <Marker
+            key={q.id}
+            coordinate={{ latitude: q.latitude, longitude: q.longitude }}
+            title={q.title}
+            description={q.description}
+            pinColor="blue"
+            onPress={() => router.push(`/quest/${q.id}`)}
+          />
+        ))}
       </MapView>
     </View>
   );

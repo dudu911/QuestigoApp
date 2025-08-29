@@ -12,6 +12,7 @@ import { supabase } from "../../../src/services/supabaseClient";
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
 import { mapQuestRowToUI, QuestRow } from "../../../src/mappers/questMapper";
+import { isRTL } from "../../../src/i18n/config";
 
 async function fetchQuests(): Promise<QuestRow[]> {
   const { data, error } = await supabase.from("quests").select(`
@@ -28,7 +29,12 @@ async function fetchQuests(): Promise<QuestRow[]> {
 
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
+  const [rtl, setRtl] = React.useState(isRTL(i18n.language));
   const locale = i18n.language.startsWith("he") ? "he" : "en";
+
+  React.useEffect(() => {
+    setRtl(isRTL(i18n.language));
+  }, [i18n.language]);
 
   const {
     data: questRows = [],
@@ -46,42 +52,70 @@ export default function HomeScreen() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator />
-        <Text>{t("common.loading")}</Text>
+        <Text style={{ textAlign: rtl ? "right" : "left" }}>
+          {t("common.loading")}
+        </Text>
       </View>
     );
   }
 
   if (isError) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>{t("common.error")}</Text>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ textAlign: rtl ? "right" : "left" }}>
+          {t("common.error")}
+        </Text>
       </View>
     );
   }
 
   return (
-    <FlatList
-      data={quests}
-      keyExtractor={(item) => item.id}
-      refreshControl={
-        <RefreshControl refreshing={isFetching} onRefresh={refetch} />
-      }
-      contentContainerStyle={{ paddingBottom: 36 }} // or a larger value if needed
-      renderItem={({ item }) => (
-        <Pressable
-          onPress={() => router.push(`/quest/${item.id}`)}
-          style={{
-            padding: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: "#ddd",
-          }}
-        >
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>{item.title}</Text>
-          <Text>{item.description}</Text>
-        </Pressable>
-      )}
-    />
+    <View style={{ flex: 1 }}>
+      <FlatList
+        data={quests}
+        keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+        }
+        contentContainerStyle={{ paddingBottom: 36 }}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() => router.push(`/quest/${item.id}`)}
+            style={{
+              padding: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: "#ddd",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "bold",
+                textAlign: rtl ? "right" : "left",
+              }}
+            >
+              {item.title}
+            </Text>
+            <Text style={{ textAlign: rtl ? "right" : "left" }}>
+              {item.description}
+            </Text>
+          </Pressable>
+        )}
+      />
+    </View>
   );
 }

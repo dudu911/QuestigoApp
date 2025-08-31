@@ -1,34 +1,68 @@
-import { queryWithSchema, singleWithSchema } from "./queryWithSchema";
-import { LobbySchema, PlayerSchema } from "@repo/types";
-import { mapLobbyToUI, mapPlayerToUI, LobbyUI, PlayerUI } from "./mappers";
 import { supabase } from "./supabaseClient";
 
-// Fetch lobby by id
-export async function fetchLobbyById(lobbyId: string): Promise<LobbyUI> {
-  const lobby = await singleWithSchema("lobbies", LobbySchema, (q) =>
-    q.eq("id", lobbyId),
-  );
-  return mapLobbyToUI({
-    ...lobby,
-    status: lobby.status ?? "waiting", // Provide a default status if undefined
-  });
+function generateLobbyCode(length = 6): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }
 
-// Fetch players for a lobby
-export async function fetchLobbyPlayers(lobbyId: string): Promise<PlayerUI[]> {
-  const players = await queryWithSchema("lobby_players", PlayerSchema, (q) =>
-    q.eq("lobby_id", lobbyId),
-  );
-  return players.map((p) =>
-    mapPlayerToUI({
-      ...p,
-      is_host: Boolean(p.is_host),
-      is_ready: Boolean(p.is_ready),
-    }),
-  );
+export async function createLobby(hostId: string, questId: string) {
+  const code = generateLobbyCode();
+
+  const { data, error } = await supabase
+    .from("lobbies")
+    .insert({
+      host_id: hostId,
+      quest_id: questId,
+      code, // 👈 short join codeX
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 }
 
-// Subscribe to lobby changes
+export async function joinLobby(lobbyId: string, playerId: string) {
+  const { data, error } = await supabase
+    .from("lobby_players")
+    .insert({ lobby_id: lobbyId, player_id: playerId })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchLobbyWithPlayers(lobbyId: string) {
+  const { data, error } = await supabase
+    .from("lobbies")
+    .select(
+      `
+      id,
+      code,
+      host_id,
+      created_at,
+      lobby_players (
+        id,
+        player_id,
+        is_host,
+        is_ready,
+        profiles (username)
+      )
+    `,
+    )
+    .eq("id", lobbyId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// 🔴 realtime subscription
 export function subscribeToLobby(
   lobbyId: string,
   onChange: (payload: any) => void,
@@ -40,8 +74,8 @@ export function subscribeToLobby(
       {
         event: "*",
         schema: "public",
-        table: "lobbies",
-        filter: `id=eq.${lobbyId}`,
+        table: "lobby_players",
+        filter: `lobby_id=eq.${lobbyId}`,
       },
       onChange,
     )

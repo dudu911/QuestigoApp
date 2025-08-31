@@ -7,18 +7,28 @@ export const QuestTranslationSchema = z.object({
 });
 
 export const QuestSchema = z.object({
-  id: z.string().uuid(),
-  city: z.string().nullable().optional(), // i18n key
-  country: z.string().nullable().optional(), // ISO code
-  hero_image: z.string().url().nullable().optional(),
-  latitude: z.number().nullable().optional(),
-  longitude: z.number().nullable().optional(),
-  created_by: z.string().uuid().nullable().optional(),
+  id: z.string(),
+  created_by: z.string().nullable(),
+  hero_image: z.string().nullable(),
+  city: z.string(),
+  country: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
   created_at: z.coerce.date(),
-  translations: z.array(QuestTranslationSchema),
+  quest_translations: z
+    .array(
+      z.object({
+        id: z.string(),
+        quest_id: z.string(),
+        locale: z.enum(["en", "he"]),
+        title: z.string(),
+        description: z.string().nullable(),
+      }),
+    )
+    .optional(),
 });
 
-export type Quest = z.infer<typeof QuestSchema>;
+export type QuestRow = z.infer<typeof QuestSchema>;
 
 export const RiddleTranslationSchema = z.object({
   locale: z.enum(["en", "he"]),
@@ -35,17 +45,34 @@ export const RiddleAnswerSchema = z.object({
 });
 
 export const RiddleSchema = z.object({
-  id: z.string().uuid(),
-  quest_id: z.string().uuid(),
+  id: z.string(),
+  quest_id: z.string(),
   latitude: z.number(),
   longitude: z.number(),
-  radius_m: z.number().nullable().optional(), // ✅ tolerate missing
+  radius_m: z.number().optional(),
   order_index: z.number(),
-  image: z.string().url().nullable().optional(),
   created_at: z.coerce.date(),
-  translations: z.array(RiddleTranslationSchema),
-  answers: z.array(RiddleAnswerSchema).optional().nullable(),
+  image: z.string().nullable().optional(),
+  riddle_translations: z.array(
+    z.object({
+      id: z.string(),
+      riddle_id: z.string(),
+      locale: z.enum(["en", "he"]),
+      title: z.string(),
+      prompt: z.string(),
+      hint: z.string().nullable().optional(),
+    }),
+  ),
+  riddle_answers: z
+    .array(
+      z.object({
+        id: z.string(),
+        riddle_id: z.string(),
+        answer: z.string(),
+        is_correct: z.boolean().optional(),
+      }),
+    )
+    .optional(),
 });
-
-export type Riddle = z.infer<typeof RiddleSchema>;
+export type RiddleRow = z.infer<typeof RiddleSchema>;
 export type RiddleAnswer = z.infer<typeof RiddleAnswerSchema>;

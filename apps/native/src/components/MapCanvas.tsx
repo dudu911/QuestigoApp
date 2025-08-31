@@ -4,21 +4,19 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { fetchQuests } from "../services/questService";
-import { mapQuestRowToUI, QuestRow } from "../mappers/questMapper";
 
 export function MapCanvas() {
   const [googleLoaded, setGoogleLoaded] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
 
-  const { data: questRows = [], isLoading } = useQuery<QuestRow[]>({
-    queryKey: ["quests"],
-    queryFn: fetchQuests,
-    staleTime: 1000 * 60 * 5,
-  });
-
   const { i18n } = useTranslation();
   const locale = i18n.language.startsWith("he") ? "he" : "en";
-  const quests = questRows.map((q) => mapQuestRowToUI(q, locale));
+
+  const { data: quests = [], isLoading } = useQuery({
+    queryKey: ["quests", locale],
+    queryFn: () => fetchQuests(locale),
+    staleTime: 1000 * 60 * 5,
+  });
 
   // Load Google Maps script on web
   useEffect(() => {
@@ -45,7 +43,7 @@ export function MapCanvas() {
 
       const bounds = new window.google.maps.LatLngBounds();
 
-      quests.forEach((q) => {
+      quests.forEach((q: any) => {
         const marker = new window.google.maps.Marker({
           position: { lat: q.latitude, lng: q.longitude },
           map,
@@ -84,6 +82,7 @@ export function MapCanvas() {
   return (
     <View style={styles.container}>
       <MapView
+        key={locale}
         style={StyleSheet.absoluteFill}
         initialRegion={{
           latitude: 31.78,
@@ -92,16 +91,21 @@ export function MapCanvas() {
           longitudeDelta: 1.5,
         }}
       >
-        {quests.map((q) => (
-          <Marker
-            key={q.id}
-            coordinate={{ latitude: q.latitude, longitude: q.longitude }}
-            title={q.title}
-            description={q.description}
-            pinColor="blue"
-            onPress={() => router.push(`/quest/${q.id}`)}
-          />
-        ))}
+        {quests
+          .filter(
+            (q) =>
+              typeof q.latitude === "number" && typeof q.longitude === "number",
+          )
+          .map((q) => (
+            <Marker
+              key={q.id}
+              coordinate={{ latitude: q.latitude, longitude: q.longitude }}
+              title={q.title || ""}
+              description={q.description || ""}
+              pinColor="blue"
+              onPress={() => router.push(`/quest/${q.id}`)}
+            />
+          ))}
       </MapView>
     </View>
   );

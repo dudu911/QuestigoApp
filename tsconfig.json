@@ -3,6 +3,8 @@
   "extends": "expo/tsconfig.base",
   "baseUrl": ".",
   "paths": {
+    "@repo/mappers": ["apps/native/src/mappers/index.ts"],
+    "@repo/mappers/*": ["apps/native/src/mappers/*"],
     "@repo/types/*": ["packages/types/src/*"],
     "@redux/*": ["apps/native/src/redux/*"],
     "@services/*": ["apps/native/src/services/*"]

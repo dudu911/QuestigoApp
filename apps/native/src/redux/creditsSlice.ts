@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { PurchaseUI } from "@services/mappers";
+import { PurchaseUI } from "../../src/mappers";
 
 interface CreditsState {
   balance: number;

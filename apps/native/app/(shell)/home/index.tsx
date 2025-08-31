@@ -8,23 +8,9 @@ import {
 } from "react-native";
 import { StyledText } from "@repo/ui";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "../../../src/services/supabaseClient";
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
-import { mapQuestRowToUI, QuestRow } from "../../../src/mappers/questMapper";
-
-async function fetchQuests(): Promise<QuestRow[]> {
-  const { data, error } = await supabase.from("quests").select(`
-      id,
-      latitude,
-      longitude,
-      country,
-      city,
-      quest_translations (*)
-    `);
-  if (error) throw error;
-  return data as QuestRow[];
-}
+import { fetchQuests } from "@services/questService";
 
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
@@ -34,15 +20,14 @@ export default function HomeScreen() {
     data: questRows = [],
     isLoading,
     isError,
+    error,
     refetch,
     isFetching,
   } = useQuery({
-    queryKey: ["quests"],
-    queryFn: fetchQuests,
+    queryKey: ["quests", locale],
+    queryFn: () => fetchQuests(locale),
     staleTime: 1000 * 60 * 5,
   });
-
-  const quests = questRows.map((q) => mapQuestRowToUI(q, locale));
 
   if (isLoading) {
     return (
@@ -60,6 +45,7 @@ export default function HomeScreen() {
   }
 
   if (isError) {
+    console.error("Failed to fetch quests", { error: error.message });
     return (
       <View
         style={{
@@ -76,7 +62,7 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1 }}>
       <FlatList
-        data={quests}
+        data={questRows}
         keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl refreshing={isFetching} onRefresh={refetch} />

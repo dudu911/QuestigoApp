@@ -14,7 +14,7 @@ export function ProvidersDemo() {
   const activeQuestId = useAppSelector(
     (state: RootState) => state.quest.activeQuestId,
   );
-  const teamCode = useAppSelector((state: RootState) => state.lobby.teamCode);
+  const teamCode = useAppSelector((state: RootState) => state.lobby.code);
   const locale = useAppSelector((state: RootState) => state.auth.locale);
   const isOnline = useAppSelector((state: RootState) => state.auth.isOnline);
 
@@ -36,8 +36,8 @@ export function ProvidersDemo() {
   };
 
   const simulateTeam = () => {
-    const newTeamCode = teamCode ? undefined : "DEMO";
-    dispatch({ type: "lobby/setTeamCode", payload: newTeamCode });
+    const newCode = teamCode ? undefined : "DEMO123";
+    dispatch({ type: "lobby/setTeamCode", payload: newCode });
   };
 
   return (

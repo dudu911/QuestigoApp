@@ -33,7 +33,8 @@
     "tooFar": "אתה רחוק מדי מהמיקום",
     "noRiddlesFound": "לא נמצאו חידות.",
     "showHint": "הצג רמז",
-    "noHint": "אין רמז"
+    "noHint": "אין רמז",
+    "loadingQuest": "טוען משימה…"
   },
   "team": {
     "title": "צוות",

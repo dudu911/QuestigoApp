@@ -8,7 +8,7 @@ export const PlayerSchema = z.object({
   is_ready: z.boolean().catch(false),
 });
 
-export type Player = z.infer<typeof PlayerSchema>;
+export type PlayerRow = z.infer<typeof PlayerSchema>;
 
 export const LobbySchema = z.object({
   id: z.string().uuid(),

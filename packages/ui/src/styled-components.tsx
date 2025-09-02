@@ -8,60 +8,43 @@ import {
   PressableProps,
 } from "react-native";
 import { theme } from "./theme";
+import { useDirection } from "../../../apps/native/src/i18n/DirectionProvider";
 
-//
-// 🔹 StyledView
-//
+// ---------------- StyledView ----------------
 interface StyledViewProps {
   children?: React.ReactNode;
-
-  // Flex
-  flex?: boolean | number;
-  flexDirection?: ViewStyle["flexDirection"];
-  alignItems?: ViewStyle["alignItems"];
-  justifyContent?: ViewStyle["justifyContent"];
-
-  // Spacing
+  flex?: number | boolean;
   padding?: keyof typeof theme.spacing;
   margin?: keyof typeof theme.spacing;
-  marginTop?: keyof typeof theme.spacing;
-  marginBottom?: keyof typeof theme.spacing;
-  marginLeft?: keyof typeof theme.spacing;
-  marginRight?: keyof typeof theme.spacing;
-
-  // Visuals
   backgroundColor?: string;
+  alignItems?: ViewStyle["alignItems"];
+  justifyContent?: ViewStyle["justifyContent"];
+  row?: boolean; // 👈 auto RTL row
   style?: ViewStyle;
 }
 
 export const StyledView: React.FC<StyledViewProps> = ({
   children,
   flex,
-  flexDirection,
-  alignItems,
-  justifyContent,
   padding,
   margin,
-  marginTop,
-  marginBottom,
-  marginLeft,
-  marginRight,
   backgroundColor,
+  alignItems,
+  justifyContent,
+  row,
   style,
   ...props
 }) => {
+  const dir = useDirection();
+
   const viewStyle: ViewStyle = {
-    ...(flex !== undefined && { flex: typeof flex === "boolean" ? 1 : flex }),
-    ...(flexDirection && { flexDirection }),
-    ...(alignItems && { alignItems }),
-    ...(justifyContent && { justifyContent }),
+    ...(flex && { flex: typeof flex === "number" ? flex : 1 }),
     ...(padding && { padding: theme.spacing[padding] }),
     ...(margin && { margin: theme.spacing[margin] }),
-    ...(marginTop && { marginTop: theme.spacing[marginTop] }),
-    ...(marginBottom && { marginBottom: theme.spacing[marginBottom] }),
-    ...(marginLeft && { marginLeft: theme.spacing[marginLeft] }),
-    ...(marginRight && { marginRight: theme.spacing[marginRight] }),
     ...(backgroundColor && { backgroundColor }),
+    ...(alignItems && { alignItems }),
+    ...(justifyContent && { justifyContent }),
+    ...(row && { flexDirection: dir === "rtl" ? "row-reverse" : "row" }),
     ...style,
   };
 
@@ -72,16 +55,14 @@ export const StyledView: React.FC<StyledViewProps> = ({
   );
 };
 
-//
-// 🔹 StyledText
-//
+// ---------------- StyledText ----------------
 interface StyledTextProps {
   children: React.ReactNode;
   size?: keyof typeof theme.typography;
   color?: string;
   fontWeight?: TextStyle["fontWeight"];
   marginBottom?: keyof typeof theme.spacing;
-  textAlign?: TextStyle["textAlign"]; // ✅ NEW
+  textAlign?: TextStyle["textAlign"];
   style?: TextStyle;
 }
 
@@ -95,12 +76,14 @@ export const StyledText: React.FC<StyledTextProps> = ({
   style,
   ...props
 }) => {
+  const dir = useDirection();
+
   const textStyle: TextStyle = {
     fontSize: theme.typography[size],
     color,
+    textAlign: textAlign ?? (dir === "rtl" ? "right" : "left"),
     ...(fontWeight && { fontWeight }),
     ...(marginBottom && { marginBottom: theme.spacing[marginBottom] }),
-    ...(textAlign && { textAlign }), // ✅ NEW
     ...style,
   };
 
@@ -111,9 +94,7 @@ export const StyledText: React.FC<StyledTextProps> = ({
   );
 };
 
-//
-// 🔹 StyledButton
-//
+// ---------------- StyledButton ----------------
 interface StyledButtonProps extends PressableProps {
   children: React.ReactNode;
   variant?: "primary" | "secondary";
@@ -122,7 +103,10 @@ interface StyledButtonProps extends PressableProps {
 
 export const StyledButton = React.forwardRef<View, StyledButtonProps>(
   ({ children, variant = "primary", size = "md", ...props }, ref) => {
+    const dir = useDirection();
+
     const buttonStyle: ViewStyle = {
+      flexDirection: dir === "rtl" ? "row-reverse" : "row", // 👈 flip content
       paddingHorizontal:
         size === "sm"
           ? theme.spacing.sm
@@ -147,6 +131,7 @@ export const StyledButton = React.forwardRef<View, StyledButtonProps>(
         variant === "primary" ? theme.colors.white : theme.colors.gray[800],
       fontSize: theme.typography.base,
       fontWeight: "600",
+      textAlign: dir === "rtl" ? "right" : "left",
     };
 
     return (

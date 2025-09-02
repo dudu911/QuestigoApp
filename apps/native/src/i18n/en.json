@@ -30,7 +30,11 @@
     "location": "Location",
     "distance": "Distance",
     "nearby": "You're nearby!",
-    "tooFar": "You're too far from the location"
+    "tooFar": "You're too far from the location",
+    "noRiddlesFound": "No riddles found.",
+    "showHint": "Show Hint",
+    "noHint": "No hint",
+    "loadingQuest": "Loading quest…"
   },
   "team": {
     "title": "Team",

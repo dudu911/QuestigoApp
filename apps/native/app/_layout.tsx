@@ -8,6 +8,8 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "../src/i18n";
 import { Provider } from "react-redux";
 import { store } from "../src/redux/store";
+import { DirectionProvider } from "../src/i18n/DirectionProvider";
+
 const client = new QueryClient();
 
 export default function RootLayout() {
@@ -21,7 +23,9 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <Provider store={store}>
             <ThemeProvider>
-              <Slot />
+              <DirectionProvider>
+                <Slot />
+              </DirectionProvider>
             </ThemeProvider>
           </Provider>
         </SafeAreaProvider>

@@ -6,7 +6,7 @@ export const UserCreditsSchema = z.object({
   updated_at: z.coerce.date(),
 });
 
-export type UserCredits = z.infer<typeof UserCreditsSchema>;
+export type UserCreditsRow = z.infer<typeof UserCreditsSchema>;
 
 export const PurchaseSchema = z.object({
   id: z.string().uuid(),
@@ -18,4 +18,4 @@ export const PurchaseSchema = z.object({
   created_at: z.coerce.date(),
 });
 
-export type Purchase = z.infer<typeof PurchaseSchema>;
+export type PurchaseRow = z.infer<typeof PurchaseSchema>;

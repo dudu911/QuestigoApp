@@ -9,6 +9,7 @@ export function LanguageToggle() {
 
   const toggleLanguage = () => {
     const newLocale = isHebrew ? "en" : "he";
+    console.log("[LanguageToggle] changing language:", newLocale);
     i18n.changeLanguage(newLocale);
   };
 

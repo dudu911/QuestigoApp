@@ -1,11 +1,11 @@
 import { queryWithSchema } from "./queryWithSchema";
 import { UserCreditsSchema, PurchaseSchema } from "@repo/types";
 import {
-  mapCreditsToUI,
-  mapPurchaseToUI,
+  mapCreditsRowToUI,
+  mapPurchaseRowToUI,
   UserCreditsUI,
   PurchaseUI,
-} from "./mappers";
+} from "../mappers";
 import { supabase } from "./supabaseClient";
 
 // Fetch user credits balance
@@ -18,7 +18,10 @@ export async function fetchUserCredits(
     (q) => q.eq("user_id", userId),
   );
   return credits.map((c) =>
-    mapCreditsToUI({ ...c, balance: c.balance !== undefined ? c.balance : 0 }),
+    mapCreditsRowToUI({
+      ...c,
+      balance: c.balance !== undefined ? c.balance : 0,
+    }),
   );
 }
 
@@ -28,7 +31,7 @@ export async function fetchPurchases(userId: string): Promise<PurchaseUI[]> {
     q.eq("user_id", userId).order("created_at", { ascending: false }),
   );
   return purchases.map((p) =>
-    mapPurchaseToUI({
+    mapPurchaseRowToUI({
       ...p,
       currency: p.currency !== undefined ? p.currency : "USD",
     }),

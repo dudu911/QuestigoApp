@@ -13,9 +13,10 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../../src/services/supabaseClient";
 import { getDistanceFromLatLonInM } from "../../../src/utils/geo";
-import { mapRiddleRowToUI, RiddleRow } from "../../../src/mappers/riddleMapper";
-import { mapQuestRowToUI, QuestRow } from "../../../src/mappers/questMapper";
+import { mapRiddleRowToUI } from "../../../src/mappers/riddleMapper";
+import { mapQuestRowToUI } from "../../../src/mappers/questMapper";
 import { useTranslation } from "react-i18next";
+import { RiddleRow, QuestRow } from "@repo/types";
 
 // --- Query functions ---
 async function fetchQuestWithRiddles(id: string): Promise<{
@@ -53,7 +54,7 @@ async function fetchQuestWithRiddles(id: string): Promise<{
 
 export default function QuestModal() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const locale = i18n.language.startsWith("he") ? "he" : "en";
 
   const dispatch = useAppDispatch();
@@ -104,8 +105,8 @@ export default function QuestModal() {
         const d = getDistanceFromLatLonInM(
           userCoords.lat,
           userCoords.lng,
-          r.latitude,
-          r.longitude,
+          r.lat,
+          r.lng,
         );
         setDistance(d);
       }
@@ -115,7 +116,7 @@ export default function QuestModal() {
   if (isLoading) {
     return (
       <StyledView flex padding="lg">
-        <StyledText>Loading quest…</StyledText>
+        <StyledText>{t("common.loading")}</StyledText>
       </StyledView>
     );
   }
@@ -133,7 +134,9 @@ export default function QuestModal() {
 
   const currentRiddle = riddles[riddleIndex];
   const insideGeofence =
-    distance !== null && currentRiddle && distance <= currentRiddle.radius + 50;
+    distance !== null &&
+    currentRiddle &&
+    distance <= currentRiddle.radiusM + 50;
 
   return (
     <StyledView flex padding="lg" backgroundColor="white">
@@ -163,7 +166,9 @@ export default function QuestModal() {
             onPress={() => dispatch(setHintUsed())}
             style={{ marginBottom: 8 }}
           >
-            {hintUsed ? (currentRiddle.hint ?? "No hint") : "Show Hint"}
+            {hintUsed
+              ? (currentRiddle.hint ?? t("quest.noHint"))
+              : t("quest.showHint")}
           </StyledButton>
 
           <StyledButton
@@ -181,7 +186,7 @@ export default function QuestModal() {
           </StyledButton>
         </>
       ) : (
-        <StyledText>No riddles found.</StyledText>
+        <StyledText>{t("quest.noRiddlesFound")}</StyledText>
       )}
 
       <StyledButton
@@ -189,7 +194,7 @@ export default function QuestModal() {
         onPress={() => router.back()}
         style={{ marginTop: 16 }}
       >
-        Close
+        {t("common.close")}
       </StyledButton>
     </StyledView>
   );

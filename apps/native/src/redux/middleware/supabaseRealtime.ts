@@ -2,12 +2,18 @@ import { Middleware } from "@reduxjs/toolkit";
 import { supabase } from "../../services/supabaseClient";
 import { setPlayers, setLobby } from "../lobbySlice";
 import { setBalance, setPurchases } from "../creditsSlice";
+
 import {
   PlayerSchema,
   LobbySchema,
   UserCreditsSchema,
   PurchaseSchema,
 } from "@repo/types";
+import {
+  mapPlayerRowToUI,
+  mapCreditsRowToUI,
+  mapPurchaseRowToUI,
+} from "../../mappers";
 
 export const supabaseRealtimeMiddleware: Middleware = (store) => {
   let lobbyChannel: ReturnType<typeof supabase.channel> | null = null;
@@ -62,7 +68,8 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
             if (!error && data) {
               const parsed = PlayerSchema.array().safeParse(data);
               if (parsed.success) {
-                store.dispatch(setPlayers(parsed.data));
+                const players = parsed.data.map(mapPlayerRowToUI);
+                store.dispatch(setPlayers(players));
               }
             }
           },
@@ -107,7 +114,8 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
             if (payload.new) {
               const credits = UserCreditsSchema.safeParse(payload.new);
               if (credits.success) {
-                store.dispatch(setBalance(credits.data.balance));
+                const mapped = mapCreditsRowToUI(credits.data);
+                store.dispatch(setBalance(mapped.balance));
               }
             }
           },
@@ -134,7 +142,8 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
             if (!error && data) {
               const parsed = PurchaseSchema.array().safeParse(data);
               if (parsed.success) {
-                store.dispatch(setPurchases(parsed.data));
+                const purchases = parsed.data.map(mapPurchaseRowToUI);
+                store.dispatch(setPurchases(purchases));
               }
             }
           },

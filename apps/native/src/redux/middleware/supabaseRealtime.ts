@@ -46,7 +46,15 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
             if (payload.new) {
               const lobby = LobbySchema.safeParse(payload.new);
               if (lobby.success) {
-                store.dispatch(setLobby(lobby.data));
+                store.dispatch(
+                  setLobby({
+                    id: lobby.data.id,
+                    code: lobby.data.code,
+                    status: lobby.data.status,
+                    questId: lobby.data.quest_id,
+                    hostId: lobby.data.host_id,
+                  }),
+                );
               }
             }
           },
@@ -68,7 +76,14 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
             if (!error && data) {
               const parsed = PlayerSchema.array().safeParse(data);
               if (parsed.success) {
-                const players = parsed.data.map(mapPlayerRowToUI);
+                const players = parsed.data.map((row) => {
+                  const mapped = mapPlayerRowToUI(row);
+                  return {
+                    ...mapped,
+                    username:
+                      mapped.username === null ? undefined : mapped.username,
+                  };
+                });
                 store.dispatch(setPlayers(players));
               }
             }

@@ -3,7 +3,6 @@ import { useLocalSearchParams, router } from "expo-router";
 import { StyledView, StyledText, StyledButton } from "@repo/ui";
 import * as Location from "expo-location";
 import { useAppSelector, useAppDispatch } from "@redux/hooks";
-
 import { RootState } from "../../../src/redux/store";
 import {
   setActiveQuestId,
@@ -17,8 +16,11 @@ import { mapRiddleRowToUI } from "../../../src/mappers/riddleMapper";
 import { mapQuestRowToUI } from "../../../src/mappers/questMapper";
 import { useTranslation } from "react-i18next";
 import { RiddleRow, QuestRow } from "@repo/types";
+import { createLobby } from "@services/index";
 
-// --- Query functions ---
+const GEOFENCE_MARGIN = 50;
+
+// --- Query function (can be moved to questService.ts) ---
 async function fetchQuestWithRiddles(id: string): Promise<{
   quest: QuestRow;
   riddles: RiddleRow[];
@@ -80,6 +82,7 @@ export default function QuestModal() {
   const riddles = data
     ? data.riddles.map((r) => mapRiddleRowToUI(r, locale))
     : [];
+  const userId = useAppSelector((s: RootState) => s.auth.user?.id);
 
   // Track active quest id
   useEffect(() => {
@@ -124,9 +127,9 @@ export default function QuestModal() {
   if (isError || !quest) {
     return (
       <StyledView flex padding="lg">
-        <StyledText>Error loading quest.</StyledText>
+        <StyledText>{t("common.error")}</StyledText>
         <StyledButton variant="secondary" onPress={() => router.back()}>
-          Close
+          {t("common.close")}
         </StyledButton>
       </StyledView>
     );
@@ -136,7 +139,7 @@ export default function QuestModal() {
   const insideGeofence =
     distance !== null &&
     currentRiddle &&
-    distance <= currentRiddle.radiusM + 50;
+    distance <= (currentRiddle.radiusM ?? 30) + GEOFENCE_MARGIN;
 
   return (
     <StyledView flex padding="lg" backgroundColor="white">
@@ -157,19 +160,26 @@ export default function QuestModal() {
           )}
 
           <StyledText marginBottom="sm">
-            Distance: {distance ? `${distance.toFixed(0)}m` : "Unknown"}
+            {t("quest.distance")}:{" "}
+            {distance ? `${distance.toFixed(0)}m` : t("quest.unknown")}
           </StyledText>
 
-          <StyledButton
-            variant="secondary"
-            disabled={!insideGeofence}
-            onPress={() => dispatch(setHintUsed())}
-            style={{ marginBottom: 8 }}
-          >
-            {hintUsed
-              ? (currentRiddle.hint ?? t("quest.noHint"))
-              : t("quest.showHint")}
-          </StyledButton>
+          {!hintUsed && (
+            <StyledButton
+              variant="secondary"
+              disabled={!insideGeofence}
+              onPress={() => dispatch(setHintUsed())}
+              style={{ marginBottom: 8 }}
+            >
+              {t("quest.showHint")}
+            </StyledButton>
+          )}
+
+          {hintUsed && (
+            <StyledText marginBottom="sm">
+              💡 {currentRiddle.hint ?? t("quest.noHint")}
+            </StyledText>
+          )}
 
           <StyledButton
             variant="primary"
@@ -178,15 +188,45 @@ export default function QuestModal() {
               if (riddleIndex < riddles.length - 1) {
                 dispatch(nextRiddle());
               } else {
+                dispatch(setActiveQuestId(null));
                 router.replace("/home");
               }
             }}
           >
-            {riddleIndex < riddles.length - 1 ? "Next Riddle" : "Finish Quest"}
+            {riddleIndex < riddles.length - 1
+              ? t("quest.nextRiddle")
+              : t("quest.finish")}
           </StyledButton>
         </>
       ) : (
         <StyledText>{t("quest.noRiddlesFound")}</StyledText>
+      )}
+
+      {userId && (
+        <>
+          <StyledButton
+            variant="primary"
+            onPress={async () => {
+              try {
+                const lobby = await createLobby(userId, quest.id);
+                router.push(`/lobby/${lobby.id}`);
+              } catch (err) {
+                console.error("❌ Failed to create lobby:", err);
+              }
+            }}
+            style={{ marginTop: 16 }}
+          >
+            Create Lobby
+          </StyledButton>
+
+          <StyledButton
+            variant="secondary"
+            onPress={() => router.push("/join-lobby")}
+            style={{ marginTop: 8 }}
+          >
+            Join Lobby by Code
+          </StyledButton>
+        </>
       )}
 
       <StyledButton

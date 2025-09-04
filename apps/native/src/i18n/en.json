@@ -31,6 +31,7 @@
     "distance": "Distance",
     "nearby": "You're nearby!",
     "tooFar": "You're too far from the location",
+    "nextRiddle": "Next Riddle",
     "noRiddlesFound": "No riddles found.",
     "showHint": "Show Hint",
     "noHint": "No hint",

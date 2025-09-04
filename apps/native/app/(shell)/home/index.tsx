@@ -6,11 +6,12 @@ import {
   Pressable,
   RefreshControl,
 } from "react-native";
-import { StyledText } from "@repo/ui";
+import { StyledText, StyledButton } from "@repo/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
 import { fetchQuests } from "@services/questService";
+import { DevUserSwitcher } from "../../../src//components/DevUserSwitcher";
 
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
@@ -31,13 +32,7 @@ export default function HomeScreen() {
 
   if (isLoading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator />
         <StyledText>{t("common.loading")}</StyledText>
       </View>
@@ -45,15 +40,11 @@ export default function HomeScreen() {
   }
 
   if (isError) {
-    console.error("Failed to fetch quests", { error: error.message });
+    console.error("Failed to fetch quests", {
+      error: (error as Error).message,
+    });
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <StyledText>{t("common.error")}</StyledText>
       </View>
     );
@@ -83,7 +74,25 @@ export default function HomeScreen() {
             <StyledText>{item.description}</StyledText>
           </Pressable>
         )}
+        ListFooterComponent={
+          <View style={{ padding: 16, gap: 12 }}>
+            <StyledButton
+              variant="primary"
+              onPress={() => router.push("/(modals)/lobby/join-lobby")}
+            >
+              Join Lobby
+            </StyledButton>
+
+            <StyledButton
+              variant="secondary"
+              onPress={() => router.push("/(modals)/lobby/create-lobby")}
+            >
+              Create Lobby
+            </StyledButton>
+          </View>
+        }
       />
+      <DevUserSwitcher />
     </View>
   );
 }

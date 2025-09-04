@@ -1,4 +1,5 @@
 import { PurchaseRow } from "@repo/types";
+import { safeDate } from "../utils/date";
 
 export function mapPurchaseRowToUI(p: PurchaseRow) {
   return {
@@ -8,10 +9,7 @@ export function mapPurchaseRowToUI(p: PurchaseRow) {
     credits: p.credits,
     amount: p.amount,
     currency: p.currency,
-    createdAt:
-      p.created_at && !isNaN(new Date(p.created_at as any).getTime())
-        ? new Date(p.created_at as any).toISOString()
-        : null,
+    createdAt: safeDate(p.created_at).toISOString(),
   };
 }
 

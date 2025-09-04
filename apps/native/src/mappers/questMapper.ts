@@ -1,30 +1,40 @@
+// src/mappers/questMapper.ts
 import { QuestRow } from "@repo/types";
 
-// A clean UI-facing type
-export type QuestUIBase = {
+export type QuestUI = {
   id: string;
+  cityKey: string;
+  countryCode: string;
+  heroImage: string | null;
   latitude: number;
   longitude: number;
-  country: string;
-  city: string;
+  createdBy: string | null;
+  createdAt: string; // ✅ stored as ISO string for Redux
   title: string;
   description: string;
-  heroImage: string | null;
+  translations: {
+    id: string;
+    locale: "en" | "he";
+    title: string;
+    description: string;
+  }[];
 };
 
-// Mapper: pick the right translation for current locale
-export function mapQuestRowToUI(q: QuestRow, locale: "en" | "he" = "en") {
-  // Debug: log locale and available translations
-  if (typeof window !== "undefined") {
-    console.log("[mapQuestRowToUI] locale:", locale);
-    console.log("[mapQuestRowToUI] quest_translations:", q.quest_translations);
-  }
+export function mapQuestRowToUI(
+  q: QuestRow,
+  locale: "en" | "he" = "en",
+): QuestUI {
   const tr =
     q.quest_translations?.find((t) => t.locale === locale) ??
     q.quest_translations?.[0];
 
-  console.log("[mapQuestRowToUI] selected_translation:", tr?.title);
-
+  let createdAt: string | null = null;
+  if (q.created_at) {
+    const date = new Date(q.created_at);
+    if (!isNaN(date.getTime())) {
+      createdAt = date.toISOString();
+    }
+  }
   return {
     id: q.id,
     cityKey: q.city,
@@ -33,10 +43,7 @@ export function mapQuestRowToUI(q: QuestRow, locale: "en" | "he" = "en") {
     latitude: q.latitude,
     longitude: q.longitude,
     createdBy: q.created_by,
-    createdAt:
-      q.created_at && !isNaN(new Date(q.created_at as any).getTime())
-        ? new Date(q.created_at as any).toISOString()
-        : null,
+    createdAt: createdAt ?? "",
     translations: (q.quest_translations ?? []).map((t) => ({
       id: t.id,
       locale: t.locale,
@@ -47,4 +54,3 @@ export function mapQuestRowToUI(q: QuestRow, locale: "en" | "he" = "en") {
     description: tr?.description ?? "",
   };
 }
-export type QuestUI = ReturnType<typeof mapQuestRowToUI>;

@@ -14,7 +14,7 @@ export const QuestSchema = z.object({
   country: z.string(),
   latitude: z.number(),
   longitude: z.number(),
-  created_at: z.coerce.date(),
+  created_at: z.string(),
   quest_translations: z
     .array(
       z.object({
@@ -51,7 +51,7 @@ export const RiddleSchema = z.object({
   longitude: z.number(),
   radius_m: z.number().optional(),
   order_index: z.number(),
-  created_at: z.coerce.date(),
+  created_at: z.string(),
   image: z.string().nullable().optional(),
   riddle_translations: z.array(
     z.object({

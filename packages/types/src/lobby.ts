@@ -10,13 +10,19 @@ export const PlayerSchema = z.object({
 
 export type PlayerRow = z.infer<typeof PlayerSchema>;
 
+export type PlayerRowWithProfile = PlayerRow & {
+  profiles?: {
+    username: string | null;
+  };
+};
+
 export const LobbySchema = z.object({
   id: z.string().uuid(),
   code: z.string().min(4).max(8),
   host_id: z.string().uuid(),
   quest_id: z.string().uuid(),
   status: z.enum(["waiting", "active", "completed"]).default("waiting"),
-  created_at: z.coerce.date(),
+  created_at: z.string(),
 });
 
 export type Lobby = z.infer<typeof LobbySchema>;

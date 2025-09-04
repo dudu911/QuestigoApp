@@ -1,17 +1,22 @@
+// src/mappers/lobbyMapper.ts
 import { Lobby } from "@repo/types";
 
-export function mapLobbyToUI(l: Lobby) {
+export type LobbyUI = {
+  id: string;
+  code: string;
+  questId: string | null;
+  hostId: string | null;
+  status: "waiting" | "active" | "completed";
+  createdAt: string; // ✅ store as ISO string
+};
+
+export function mapLobbyRowToUI(row: Lobby): LobbyUI {
   return {
-    id: l.id,
-    code: l.code,
-    hostId: l.host_id,
-    questId: l.quest_id,
-    status: l.status,
-    createdAt:
-      l.created_at && !isNaN(new Date(l.created_at as any).getTime())
-        ? new Date(l.created_at as any).toISOString()
-        : null,
-    // translations: l.translations ?? [], // optional if you add lobby_translations
+    id: row.id,
+    code: row.code,
+    questId: row.quest_id ?? null,
+    hostId: row.host_id ?? null,
+    status: row.status as "waiting" | "active" | "completed",
+    createdAt: new Date(row.created_at).toISOString(), // ✅ safe conversion
   };
 }
-export type LobbyUI = ReturnType<typeof mapLobbyToUI>;

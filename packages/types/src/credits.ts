@@ -15,7 +15,7 @@ export const PurchaseSchema = z.object({
   credits: z.number(),
   amount: z.number(),
   currency: z.string().default("USD"),
-  created_at: z.coerce.date(),
+  created_at: z.string(),
 });
 
 export type PurchaseRow = z.infer<typeof PurchaseSchema>;

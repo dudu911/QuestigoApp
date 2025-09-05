@@ -11,12 +11,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
 import { fetchQuests } from "@services/questService";
-import { DevUserSwitcher } from "../../../src//components/DevUserSwitcher";
 
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language.startsWith("he") ? "he" : "en";
-
   const {
     data: questRows = [],
     isLoading,
@@ -92,7 +90,6 @@ export default function HomeScreen() {
           </View>
         }
       />
-      <DevUserSwitcher />
     </View>
   );
 }

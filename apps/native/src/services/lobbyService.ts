@@ -12,21 +12,46 @@ function generateLobbyCode(length = 6): string {
 }
 
 // ✅ Create a lobby
+// ✅ Create a lobby and register host as a player
 export async function createLobby(
   hostId: string,
   questId: string,
-): Promise<LobbyUI> {
+): Promise<{
+  lobby: LobbyUI;
+  hostPlayer: PlayerUI;
+}> {
   const code = generateLobbyCode();
-  const { data, error } = await supabase
+
+  // 1. Create lobby
+  const { data: lobbyData, error: lobbyError } = await supabase
     .from("lobbies")
     .insert({ host_id: hostId, quest_id: questId, code })
     .select("*")
     .single();
 
-  if (error) throw error;
-  return mapLobbyRowToUI(data);
-}
+  if (lobbyError) throw lobbyError;
 
+  const lobby = mapLobbyRowToUI(lobbyData);
+
+  // 2. Insert host into lobby_players with is_host = true
+  const { data: playerData, error: playerError } = await supabase
+    .from("lobby_players")
+    .insert({
+      lobby_id: lobby.id,
+      player_id: hostId,
+      is_host: true, // 👈 mark host
+    })
+    .select(
+      "*, id, lobby_id, player_id, is_host, is_ready, profiles (username)",
+    )
+    .single();
+
+  if (playerError) throw playerError;
+
+  const hostPlayer = mapPlayerRowToUI(playerData);
+
+  return { lobby, hostPlayer };
+}
 // ✅ Join a lobby
 export async function joinLobby(
   lobbyId: string,
@@ -35,7 +60,9 @@ export async function joinLobby(
   const { data, error } = await supabase
     .from("lobby_players")
     .insert({ lobby_id: lobbyId, player_id: playerId })
-    .select("*, profiles (username)")
+    .select(
+      "*, id, lobby_id, player_id, is_host, is_ready, profiles (username)",
+    )
     .single();
 
   if (error) throw error;
@@ -72,33 +99,6 @@ export async function fetchLobbyWithPlayers(
       mapPlayerRowToUI,
     ),
   };
-}
-
-// ✅ Subscribe to lobby updates
-export function subscribeToLobby(
-  lobbyId: string,
-  onChange: (lobby: LobbyUI, players: PlayerUI[]) => void,
-) {
-  return supabase
-    .channel(`lobby:${lobbyId}`)
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "lobby_players",
-        filter: `lobby_id=eq.${lobbyId}`,
-      },
-      async () => {
-        try {
-          const { lobby, players } = await fetchLobbyWithPlayers(lobbyId);
-          onChange(lobby, players);
-        } catch (err) {
-          console.error("❌ Failed to refresh lobby:", err);
-        }
-      },
-    )
-    .subscribe();
 }
 
 // ✅ Lookup by join code
@@ -143,23 +143,52 @@ export async function startLobby(lobbyId: string): Promise<LobbyUI> {
 }
 
 // ✅ Toggle player ready
+// src/services/lobbyService.ts
+
 export async function setPlayerReady(
   playerId: string,
   lobbyId: string,
   isReady: boolean,
 ): Promise<PlayerUI> {
+  console.log("setPlayerReady", { playerId, lobbyId, isReady }); // 🔍 debug
+
+  // Update the row
   const { data, error } = await supabase
     .from("lobby_players")
     .update({ is_ready: isReady })
     .eq("player_id", playerId)
     .eq("lobby_id", lobbyId)
-    .select("*, profiles (username)")
-    .single();
+    .select("id, lobby_id, player_id, is_host, is_ready, profiles (username)")
+    .maybeSingle(); // ✅ safer than single()
 
   if (error) throw error;
-  return mapPlayerRowToUI(data as PlayerRowWithProfile);
-}
 
+  if (!data) {
+    // 🔄 fallback: ensure player exists and fetch it
+    const { data: existing, error: fetchErr } = await supabase
+      .from("lobby_players")
+      .select("id, lobby_id, player_id, is_host, is_ready, profiles (username)")
+      .eq("player_id", playerId)
+      .eq("lobby_id", lobbyId)
+      .maybeSingle();
+
+    if (fetchErr) throw fetchErr;
+    if (!existing) {
+      throw new Error(
+        `Player ${playerId} not found in lobby ${lobbyId} after update`,
+      );
+    }
+
+    return mapPlayerRowToUI(existing as PlayerRowWithProfile);
+  }
+
+  // ✅ Normal path
+  return mapPlayerRowToUI(
+    Array.isArray(data.profiles)
+      ? { ...data, profiles: data.profiles[0] }
+      : (data as PlayerRowWithProfile),
+  );
+}
 // ✅ Ensure player is in lobby (idempotent)
 export async function ensurePlayerInLobby(
   lobbyId: string,
@@ -167,22 +196,36 @@ export async function ensurePlayerInLobby(
 ): Promise<PlayerUI> {
   const { data: existing, error: fetchErr } = await supabase
     .from("lobby_players")
-    .select("*, profiles (username)")
+    .select("id, lobby_id, player_id, is_host, is_ready, profiles (username)")
     .eq("lobby_id", lobbyId)
     .eq("player_id", playerId)
     .maybeSingle();
 
   if (fetchErr) throw fetchErr;
-  if (existing) return mapPlayerRowToUI(existing as PlayerRowWithProfile);
+  if (existing) {
+    // Fix: convert profiles array to object for PlayerRowWithProfile compatibility
+    const fixedExisting = {
+      ...existing,
+      profiles: Array.isArray(existing.profiles)
+        ? existing.profiles[0]
+        : existing.profiles,
+    };
+    return mapPlayerRowToUI(fixedExisting as PlayerRowWithProfile);
+  }
 
   const { data, error } = await supabase
     .from("lobby_players")
     .insert({ lobby_id: lobbyId, player_id: playerId })
-    .select("*, profiles (username)")
+    .select("id, lobby_id, player_id, is_host, is_ready, profiles (username)")
     .single();
 
   if (error) throw error;
-  return mapPlayerRowToUI(data as PlayerRowWithProfile);
+  // Fix: convert profiles array to object for PlayerRowWithProfile compatibility
+  const fixedData = {
+    ...data,
+    profiles: Array.isArray(data.profiles) ? data.profiles[0] : data.profiles,
+  };
+  return mapPlayerRowToUI(fixedData as PlayerRowWithProfile);
 }
 
 // ✅ Leave lobby (reassign host if needed)

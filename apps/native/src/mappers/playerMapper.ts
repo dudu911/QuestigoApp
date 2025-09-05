@@ -1,10 +1,15 @@
-import { PlayerRow } from "@repo/types";
+// src/mappers/playerMapper.ts
+import { PlayerRowWithProfile } from "@repo/types";
 
-type PlayerRowWithProfile = PlayerRow & {
-  profiles?: {
-    username?: string | null;
-  } | null;
-};
+function normalizeProfile(
+  profile: PlayerRowWithProfile["profiles"],
+): string | undefined {
+  if (!profile) return undefined;
+  if (Array.isArray(profile)) {
+    return profile[0]?.username ?? undefined;
+  }
+  return profile.username ?? undefined;
+}
 
 export function mapPlayerRowToUI(p: PlayerRowWithProfile) {
   return {
@@ -13,7 +18,7 @@ export function mapPlayerRowToUI(p: PlayerRowWithProfile) {
     playerId: p.player_id,
     isHost: p.is_host,
     isReady: p.is_ready,
-    username: p.profiles?.username ?? undefined,
+    username: normalizeProfile(p.profiles),
   };
 }
 

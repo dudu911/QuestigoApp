@@ -10,10 +10,13 @@ export const PlayerSchema = z.object({
 
 export type PlayerRow = z.infer<typeof PlayerSchema>;
 
-export type PlayerRowWithProfile = PlayerRow & {
-  profiles?: {
-    username: string | null;
-  };
+export type PlayerRowWithProfile = {
+  id: string;
+  lobby_id: string;
+  player_id: string;
+  is_host: boolean;
+  is_ready: boolean;
+  profiles: { username?: string | null } | { username?: string | null }[];
 };
 
 export const LobbySchema = z.object({

@@ -208,27 +208,28 @@ export default function QuestModal() {
             variant="primary"
             onPress={async () => {
               try {
-                const lobby = await createLobby(userId, quest.id);
-                router.push(`/lobby/${lobby.id}`);
+                const lobby = await createLobby(userId, quest.id!);
+                router.push(`/lobby/${lobby.lobby.id}`);
               } catch (err) {
                 console.error("❌ Failed to create lobby:", err);
               }
             }}
-            style={{ marginTop: 16 }}
+            style={{
+              marginTop: 16,
+            }}
           >
-            Create Lobby
+            Create Lobby for this Quest
           </StyledButton>
 
           <StyledButton
             variant="secondary"
-            onPress={() => router.push("/join-lobby")}
+            onPress={() => router.push("/(modals)/lobby/join-lobby")}
             style={{ marginTop: 8 }}
           >
             Join Lobby by Code
           </StyledButton>
         </>
       )}
-
       <StyledButton
         variant="secondary"
         onPress={() => router.back()}

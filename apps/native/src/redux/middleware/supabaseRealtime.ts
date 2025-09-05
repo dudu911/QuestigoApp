@@ -1,17 +1,18 @@
+// src/redux/middleware/supabaseRealtime.ts
 import { Middleware } from "@reduxjs/toolkit";
 import { supabase } from "../../services/supabaseClient";
 import { setPlayers, setLobby } from "../lobbySlice";
 import { setBalance, setPurchases } from "../creditsSlice";
 
 import {
-  PlayerSchema,
   LobbySchema,
   UserCreditsSchema,
   PurchaseSchema,
+  PlayerRowWithProfile,
 } from "@repo/types";
 import {
-  mapPlayerRowToUI,
   mapCreditsRowToUI,
+  mapPlayerRowToUI,
   mapPurchaseRowToUI,
 } from "../../mappers";
 
@@ -23,7 +24,9 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
   return (next) => (action: any) => {
     const result = next(action);
 
-    // ✅ Handle lobby subscription
+    // ✅ Lobby subscription
+    // ✅ Handle lobby subscription (lobbies + lobby_players)
+    // ✅ Handle lobby subscription (lobbies + lobby_players)
     if (action.type === "lobby/setLobby" && action.payload?.id) {
       const lobbyId = action.payload.id;
 
@@ -34,6 +37,30 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
 
       lobbyChannel = supabase
         .channel(`lobby:${lobbyId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "lobby_players",
+            filter: `lobby_id=eq.${lobbyId}`,
+          },
+          async () => {
+            const { data, error } = await supabase
+              .from("lobby_players")
+              .select(
+                "id, lobby_id, player_id, is_host, is_ready, profiles (username)",
+              )
+              .eq("lobby_id", lobbyId);
+
+            if (!error && data) {
+              const players = (data as PlayerRowWithProfile[]).map(
+                mapPlayerRowToUI,
+              );
+              store.dispatch(setPlayers(players));
+            }
+          },
+        )
         .on(
           "postgres_changes",
           {
@@ -51,45 +78,17 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
                     id: lobby.data.id,
                     code: lobby.data.code,
                     status: lobby.data.status,
-                    questId: lobby.data.quest_id,
-                    hostId: lobby.data.host_id,
+                    questId: lobby.data.quest_id ?? null,
+                    hostId: lobby.data.host_id ?? null,
                   }),
                 );
               }
             }
           },
         )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "lobby_players",
-            filter: `lobby_id=eq.${lobbyId}`,
-          },
-          async () => {
-            const { data, error } = await supabase
-              .from("lobby_players")
-              .select("*")
-              .eq("lobby_id", lobbyId);
-
-            if (!error && data) {
-              const parsed = PlayerSchema.array().safeParse(data);
-              if (parsed.success) {
-                const players = parsed.data.map((row) => {
-                  const mapped = mapPlayerRowToUI(row);
-                  return {
-                    ...mapped,
-                    username:
-                      mapped.username === null ? undefined : mapped.username,
-                  };
-                });
-                store.dispatch(setPlayers(players));
-              }
-            }
-          },
-        )
-        .subscribe();
+        .subscribe((status) =>
+          console.log("🔔 Lobby realtime subscription status:", status),
+        );
 
       console.log(`✅ Subscribed to realtime updates for lobby ${lobbyId}`);
     }
@@ -102,7 +101,7 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
       }
     }
 
-    // ✅ Handle user credits subscription
+    // ✅ Credits subscription
     if (action.type === "auth/setUser" && action.payload?.id) {
       const userId = action.payload.id;
 

@@ -1,15 +1,38 @@
-import { View, StyleSheet } from "react-native";
-import { Tabs } from "expo-router";
+import { View, StyleSheet, Pressable } from "react-native";
+import { router, Tabs } from "expo-router";
 import { MapCanvas } from "../../src/components/MapCanvas";
 import { Home, ShoppingCart, Wallet, User } from "lucide-react-native";
 import { LanguageToggle } from "../../src/components/LanguageToggle";
+import { StyledText } from "@repo/ui";
+import { useAppSelector } from "@redux/hooks";
 
 export default function ShellLayout() {
+  const currentUser = useAppSelector((s) => s.auth.user);
+
   return (
     <View style={styles.container}>
       {/* Persistent background map */}
       <MapCanvas />
-      <LanguageToggle />
+
+      {/* Custom header */}
+      <View style={styles.header}>
+        <StyledText size="lg" fontWeight="bold">
+          Questigo
+        </StyledText>
+        <View style={styles.headerRight}>
+          <LanguageToggle />
+          <Pressable
+            onPress={() => router.push("/(modals)/swtichUser/switch-user")}
+            style={{ marginLeft: 12 }}
+          >
+            <StyledText size="sm">
+              👤 {currentUser?.username ?? "Guest"}
+            </StyledText>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Bottom tabs */}
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -70,4 +93,18 @@ export default function ShellLayout() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  header: {
+    backgroundColor: "white",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#ddd",
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 });

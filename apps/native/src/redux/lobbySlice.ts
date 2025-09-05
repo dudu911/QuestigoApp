@@ -55,6 +55,12 @@ const lobbySlice = createSlice({
     setPlayers(state, action: PayloadAction<Player[]>) {
       state.players = action.payload;
     },
+    updatePlayer(state, action: PayloadAction<Player>) {
+      const idx = state.players.findIndex((p) => p.id === action.payload.id);
+      if (idx !== -1) {
+        state.players[idx] = { ...state.players[idx], ...action.payload };
+      }
+    },
     addPlayer(state, action: PayloadAction<Player>) {
       state.players.push(action.payload);
     },
@@ -72,6 +78,7 @@ export const {
   setCode,
   setStatus,
   setPlayers,
+  updatePlayer,
   addPlayer,
   removePlayer,
   resetLobby,

@@ -28,7 +28,7 @@ export default function JoinLobbyModal() {
       if (!lobby) throw new Error("Lobby not found");
 
       if (!userId) throw new Error("Not logged in");
-
+      console.log("trying to joing lobby");
       await joinLobby(lobby.id, userId);
       router.replace(`/lobby/${lobby.id}`);
     } catch (err: any) {
@@ -65,7 +65,7 @@ export default function JoinLobbyModal() {
       )}
 
       <StyledButton
-        variant="primary"
+        variant="secondary"
         onPress={handleJoin}
         disabled={loading}
         style={{ marginBottom: 12 }}

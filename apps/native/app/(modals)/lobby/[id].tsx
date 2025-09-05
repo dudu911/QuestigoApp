@@ -10,7 +10,6 @@ import {
 } from "../../../src/redux/lobbySlice";
 import {
   fetchLobbyWithPlayers,
-  subscribeToLobby,
   startLobby,
   setPlayerReady,
   ensurePlayerInLobby,
@@ -18,6 +17,7 @@ import {
   kickPlayer,
 } from "../../../src/services/lobbyService";
 import { RootState } from "@redux/store";
+import { supabase } from "@services/supabaseClient";
 
 export default function LobbyModal() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,24 +31,20 @@ export default function LobbyModal() {
   const me = players.find((p) => p.playerId === userId);
   const allReady = players.length > 0 && players.every((p) => p.isReady);
 
-  // 🔹 Fetch lobby + subscribe
+  // 🔹 Initial fetch only (realtime handled by middleware)
   useEffect(() => {
     if (!id) return;
 
-    const loadLobby = async () => {
-      const { lobby, players } = await fetchLobbyWithPlayers(id);
-      dispatch(setLobby(lobby));
-      dispatch(setPlayers(players));
-
-      if (lobby.status === "active" && lobby.questId) {
-        router.replace(`/quest/${lobby.questId}`);
-      }
-    };
-
-    loadLobby();
-
-    const sub = subscribeToLobby(id, (lobby, players) => {
-      dispatch(setLobby(lobby));
+    fetchLobbyWithPlayers(id).then(({ lobby, players }) => {
+      dispatch(
+        setLobby({
+          id: lobby.id,
+          code: lobby.code,
+          status: lobby.status,
+          questId: lobby.questId,
+          hostId: lobby.hostId,
+        }),
+      );
       dispatch(setPlayers(players));
 
       if (lobby.status === "active" && lobby.questId) {
@@ -57,7 +53,6 @@ export default function LobbyModal() {
     });
 
     return () => {
-      sub.unsubscribe();
       dispatch(resetLobby());
     };
   }, [id]);
@@ -88,6 +83,26 @@ export default function LobbyModal() {
     };
   }, [id, userId]);
 
+  useEffect(() => {
+    if (!id) return;
+
+    // 🔍 Debug subscription (logs all events from lobby_players)
+    const debugChannel = supabase
+      .channel("debug:lobby_players")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "lobby_players" },
+        (payload) => {
+          console.log("🔔 Debug payload:", payload);
+        },
+      )
+      .subscribe((status) => console.log("📡 Debug status:", status));
+
+    return () => {
+      debugChannel.unsubscribe();
+    };
+  }, [id]);
+
   return (
     <StyledView flex={1} padding="lg" backgroundColor="white">
       <StyledText size="xl" fontWeight="bold" marginBottom="md">
@@ -108,7 +123,6 @@ export default function LobbyModal() {
             {p.isReady ? "✅" : "❌"}
           </StyledText>
 
-          {/* ✅ Kick button only for host, not self */}
           {me?.isHost && p.playerId !== userId && (
             <StyledButton
               variant="secondary"
@@ -131,9 +145,22 @@ export default function LobbyModal() {
           variant={me.isReady ? "secondary" : "primary"}
           onPress={async () => {
             try {
+              // ✅ Optimistic update
+              dispatch(
+                setPlayers(
+                  players.map((p) =>
+                    p.playerId === me.playerId
+                      ? { ...p, isReady: !me.isReady }
+                      : p,
+                  ),
+                ),
+              );
+
+              // ✅ Persist to DB
               await setPlayerReady(me.playerId, lobbyId!, !me.isReady);
             } catch (err) {
               console.error("❌ Failed to toggle ready:", err);
+              // Optionally rollback
             }
           }}
           style={{ marginTop: 16 }}

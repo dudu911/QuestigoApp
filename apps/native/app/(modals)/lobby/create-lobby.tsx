@@ -36,7 +36,8 @@ export default function CreateLobbyModal() {
 
       setLoadingCreate(true);
       const lobby = await createLobby(userId, selectedQuestId);
-      router.replace(`/lobby/${lobby.id}`);
+      //await ensurePlayerInLobby(lobby.lobby.id, userId); // ✅ add host as a player row
+      router.replace(`/lobby/${lobby.lobby.id}`);
     } catch (err: any) {
       console.log("Error creating lobby:", err);
       setError(err.message);

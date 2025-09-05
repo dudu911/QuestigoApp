@@ -95,18 +95,19 @@ export const StyledText: React.FC<StyledTextProps> = ({
 };
 
 // ---------------- StyledButton ----------------
-interface StyledButtonProps extends PressableProps {
-  children: React.ReactNode;
+
+export interface StyledButtonProps extends PressableProps {
   variant?: "primary" | "secondary";
   size?: "sm" | "md" | "lg";
+  children: React.ReactNode;
 }
 
 export const StyledButton = React.forwardRef<View, StyledButtonProps>(
-  ({ children, variant = "primary", size = "md", ...props }, ref) => {
+  ({ children, variant = "primary", size = "md", style, ...props }, ref) => {
     const dir = useDirection();
 
     const buttonStyle: ViewStyle = {
-      flexDirection: dir === "rtl" ? "row-reverse" : "row", // 👈 flip content
+      flexDirection: dir === "rtl" ? "row-reverse" : "row",
       paddingHorizontal:
         size === "sm"
           ? theme.spacing.sm
@@ -135,8 +136,20 @@ export const StyledButton = React.forwardRef<View, StyledButtonProps>(
     };
 
     return (
-      <Pressable ref={ref} style={buttonStyle} {...props}>
-        <Text style={textStyle}>{children}</Text>
+      <Pressable
+        ref={ref}
+        style={
+          typeof style === "function"
+            ? (state) => [buttonStyle, style(state)]
+            : [buttonStyle, style]
+        }
+        {...props}
+      >
+        {typeof children === "string" || typeof children === "number" ? (
+          <Text style={textStyle}>{children}</Text>
+        ) : (
+          children
+        )}
       </Pressable>
     );
   },

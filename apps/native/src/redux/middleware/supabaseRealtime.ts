@@ -37,6 +37,7 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
 
       lobbyChannel = supabase
         .channel(`lobby:${lobbyId}`)
+        // Lobby players subscription
         .on(
           "postgres_changes",
           {
@@ -45,7 +46,9 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
             table: "lobby_players",
             filter: `lobby_id=eq.${lobbyId}`,
           },
-          async () => {
+          async (payload) => {
+            console.log("🔔 lobby_players change:", payload);
+
             const { data, error } = await supabase
               .from("lobby_players")
               .select(
@@ -61,6 +64,7 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
             }
           },
         )
+        // Lobbies subscription
         .on(
           "postgres_changes",
           {
@@ -70,6 +74,8 @@ export const supabaseRealtimeMiddleware: Middleware = (store) => {
             filter: `id=eq.${lobbyId}`,
           },
           (payload) => {
+            console.log("🔔 lobbies change:", payload);
+
             if (payload.new) {
               const lobby = LobbySchema.safeParse(payload.new);
               if (lobby.success) {

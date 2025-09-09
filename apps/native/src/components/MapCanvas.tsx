@@ -1,13 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { View, StyleSheet, Text, Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { fetchQuests } from "../services/questService";
 
 export function MapCanvas() {
   const [googleLoaded, setGoogleLoaded] = useState(false);
-  const mapRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
 
   const { i18n } = useTranslation();
   const locale = i18n.language.startsWith("he") ? "he" : "en";
@@ -20,22 +20,27 @@ export function MapCanvas() {
 
   // Load Google Maps script on web
   useEffect(() => {
-    if (Platform.OS === "web") {
-      if (window.google) {
-        setGoogleLoaded(true);
-      } else {
-        const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_WEB}`;
-        script.async = true;
-        script.onload = () => setGoogleLoaded(true);
-        document.head.appendChild(script);
-      }
+    if (Platform.OS !== "web") return;
+
+    if (window.google) {
+      setGoogleLoaded(true);
+    } else {
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_WEB}`;
+      script.async = true;
+      script.onload = () => setGoogleLoaded(true);
+      document.head.appendChild(script);
     }
   }, []);
 
-  // Place markers on web map
+  // Place markers + fit bounds on web
   useEffect(() => {
-    if (Platform.OS === "web" && googleLoaded && mapRef.current) {
+    if (
+      Platform.OS === "web" &&
+      googleLoaded &&
+      mapRef.current &&
+      quests.length > 0
+    ) {
       const map = new window.google.maps.Map(mapRef.current, {
         center: { lat: 31.78, lng: 35.21 },
         zoom: 8,
@@ -44,6 +49,9 @@ export function MapCanvas() {
       const bounds = new window.google.maps.LatLngBounds();
 
       quests.forEach((q: any) => {
+        if (typeof q.latitude !== "number" || typeof q.longitude !== "number")
+          return;
+
         const marker = new window.google.maps.Marker({
           position: { lat: q.latitude, lng: q.longitude },
           map,
@@ -55,10 +63,56 @@ export function MapCanvas() {
       });
 
       if (!bounds.isEmpty()) {
-        map.fitBounds(bounds);
+        map.fitBounds(bounds, {
+          top: 50,
+          right: 50,
+          bottom: 50,
+          left: 50,
+        });
       }
     }
   }, [googleLoaded, quests]);
+
+  // Native (react-native-maps)
+  const MapViewModule = require("react-native-maps");
+  const MapView = MapViewModule.default || MapViewModule;
+  const Marker = MapViewModule.Marker || MapViewModule.default.Marker;
+
+  // 🔹 Refit bounds whenever the screen regains focus
+  // 🔹 Refit bounds whenever the screen regains focus
+  useFocusEffect(
+    useCallback(() => {
+      if (
+        Platform.OS !== "android" &&
+        Platform.OS !== "ios" // ✅ include iOS if you want
+      )
+        return;
+      if (!mapRef.current || quests.length === 0) return;
+
+      const lats = quests.map((q) => q.latitude);
+      const lngs = quests.map((q) => q.longitude);
+
+      const minLat = Math.min(...lats);
+      const maxLat = Math.max(...lats);
+      const minLng = Math.min(...lngs);
+      const maxLng = Math.max(...lngs);
+
+      // 🔹 Inflate bounds by 10%
+      const latMargin = (maxLat - minLat) * 0.1;
+      const lngMargin = (maxLng - minLng) * 0.1;
+
+      mapRef.current.fitToCoordinates(
+        [
+          { latitude: minLat - latMargin, longitude: minLng - lngMargin },
+          { latitude: maxLat + latMargin, longitude: maxLng + lngMargin },
+        ],
+        {
+          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+          animated: true,
+        },
+      );
+    }, [quests]),
+  );
 
   // Render branch
   if (Platform.OS === "web") {
@@ -74,14 +128,10 @@ export function MapCanvas() {
     );
   }
 
-  // Native (react-native-maps)
-  const MapViewModule = require("react-native-maps");
-  const MapView = MapViewModule.default || MapViewModule;
-  const Marker = MapViewModule.Marker || MapViewModule.default.Marker;
-
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
         key={locale}
         style={StyleSheet.absoluteFill}
         initialRegion={{

@@ -5,6 +5,34 @@ import { useQuery } from "@tanstack/react-query";
 import { router, useFocusEffect } from "expo-router";
 import { fetchQuests } from "../services/questService";
 
+// --- Helpers for web zoom calculation ---
+const WORLD_DIM = { height: 256, width: 256 };
+const ZOOM_MAX = 21;
+
+function latRad(lat: number) {
+  const sin = Math.sin((lat * Math.PI) / 180);
+  const radX2 = Math.log((1 + sin) / (1 - sin)) / 2;
+  return Math.max(Math.min(radX2, Math.PI), -Math.PI) / 2;
+}
+
+function getBoundsZoomLevel(bounds: any, mapDim: any) {
+  const ne = bounds.getNorthEast();
+  const sw = bounds.getSouthWest();
+
+  const latFraction = (latRad(ne.lat()) - latRad(sw.lat())) / Math.PI;
+  const lngDiff = ne.lng() - sw.lng();
+  const lngFraction = (lngDiff < 0 ? lngDiff + 360 : lngDiff) / 360;
+
+  const latZoom = Math.floor(
+    Math.log(mapDim.height / WORLD_DIM.height / latFraction) / Math.LN2,
+  );
+  const lngZoom = Math.floor(
+    Math.log(mapDim.width / WORLD_DIM.width / lngFraction) / Math.LN2,
+  );
+
+  return Math.min(latZoom, lngZoom, ZOOM_MAX);
+}
+
 export function MapCanvas() {
   const [googleLoaded, setGoogleLoaded] = useState(false);
   const mapRef = useRef<any>(null);
@@ -33,7 +61,7 @@ export function MapCanvas() {
     }
   }, []);
 
-  // --- WEB: place markers + fit bounds
+  // --- WEB: place markers + animated fit bounds with padding
   useEffect(() => {
     if (
       Platform.OS === "web" &&
@@ -63,17 +91,56 @@ export function MapCanvas() {
       });
 
       if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, {
-          top: 50,
-          right: 50,
-          bottom: 50,
-          left: 50,
-        });
+        // --- Inflate bounds by 10% margin
+        const ne = bounds.getNorthEast();
+        const sw = bounds.getSouthWest();
+
+        const latMargin = (ne.lat() - sw.lat()) * 0.1;
+        const lngMargin = (ne.lng() - sw.lng()) * 0.1;
+
+        const extendedBounds = new window.google.maps.LatLngBounds(
+          new window.google.maps.LatLng(
+            sw.lat() - latMargin,
+            sw.lng() - lngMargin,
+          ),
+          new window.google.maps.LatLng(
+            ne.lat() + latMargin,
+            ne.lng() + lngMargin,
+          ),
+        );
+
+        const targetCenter = extendedBounds.getCenter();
+
+        const mapDim = {
+          height: mapRef.current.offsetHeight,
+          width: mapRef.current.offsetWidth,
+        };
+
+        const targetZoom = getBoundsZoomLevel(extendedBounds, mapDim);
+
+        // --- animate pan
+        map.panTo(targetCenter);
+
+        // --- animate zoom
+        let currentZoom = map.getZoom()!;
+        const step = targetZoom > currentZoom ? 1 : -1;
+
+        const interval = setInterval(() => {
+          if (
+            (step > 0 && currentZoom >= targetZoom) ||
+            (step < 0 && currentZoom <= targetZoom)
+          ) {
+            clearInterval(interval);
+            return;
+          }
+          currentZoom += step;
+          map.setZoom(currentZoom);
+        }, 80);
       }
     }
   }, [googleLoaded, quests]);
 
-  // --- NATIVE: always refit bounds when screen regains focus
+  // --- NATIVE: refit bounds when screen regains focus
   useFocusEffect(
     useCallback(() => {
       if (Platform.OS === "web") return;
@@ -90,8 +157,6 @@ export function MapCanvas() {
       const latPadding = (maxLat - minLat) * 0.1;
       const lngPadding = (maxLng - minLng) * 0.1;
 
-      console.log("📍 Refitting bounds on focus");
-
       mapRef.current.fitToCoordinates(
         [
           { latitude: minLat - latPadding, longitude: minLng - lngPadding },
@@ -99,7 +164,7 @@ export function MapCanvas() {
         ],
         {
           edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-          animated: true, // ✅ always animate when refocusing
+          animated: true,
         },
       );
     }, [quests]),

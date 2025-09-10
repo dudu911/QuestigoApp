@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useLocalSearchParams, router } from "expo-router";
+import React, { useEffect, useState, useCallback } from "react";
+import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { StyledView, StyledText, StyledButton } from "@repo/ui";
 import * as Location from "expo-location";
 import { useAppSelector, useAppDispatch } from "@redux/hooks";
@@ -20,7 +20,7 @@ import { createLobby } from "@services/index";
 
 const GEOFENCE_MARGIN = 50;
 
-// --- Query function (can be moved to questService.ts) ---
+// --- Query function ---
 async function fetchQuestWithRiddles(id: string): Promise<{
   quest: QuestRow;
   riddles: RiddleRow[];
@@ -64,6 +64,7 @@ export default function QuestModal() {
     (s: RootState) => s.quest.currentRiddleIndex,
   );
   const hintUsed = useAppSelector((s: RootState) => s.quest.hintUsed);
+  const userId = useAppSelector((s: RootState) => s.auth.user?.id);
 
   const [userCoords, setUserCoords] = useState<{
     lat: number;
@@ -82,12 +83,29 @@ export default function QuestModal() {
   const riddles = data
     ? data.riddles.map((r) => mapRiddleRowToUI(r, locale))
     : [];
-  const userId = useAppSelector((s: RootState) => s.auth.user?.id);
 
   // Track active quest id
   useEffect(() => {
     if (id) dispatch(setActiveQuestId(id));
-  }, [id]);
+  }, [id, dispatch]);
+
+  // ✅ Reset quest when modal closes (covers X close)
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        console.log("QuestModal lost focus → resetting quest state");
+        dispatch(setActiveQuestId(null));
+      };
+    }, [dispatch]),
+  );
+
+  // ✅ Reset quest when modal unmounts (covers router.back & edge cases)
+  useEffect(() => {
+    return () => {
+      console.log("QuestModal unmounted → resetting quest state");
+      dispatch(setActiveQuestId(null));
+    };
+  }, [dispatch]);
 
   // Get user location
   useEffect(() => {
@@ -142,7 +160,7 @@ export default function QuestModal() {
     distance <= (currentRiddle.radiusM ?? 30) + GEOFENCE_MARGIN;
 
   return (
-    <StyledView flex padding="lg" backgroundColor="white">
+    <StyledView flex={1} padding="lg" backgroundColor="white">
       <StyledText size="xl" fontWeight="bold" marginBottom="md">
         {quest.title}
       </StyledText>
@@ -214,9 +232,7 @@ export default function QuestModal() {
                 console.error("❌ Failed to create lobby:", err);
               }
             }}
-            style={{
-              marginTop: 16,
-            }}
+            style={{ marginTop: 16 }}
           >
             Create Lobby for this Quest
           </StyledButton>

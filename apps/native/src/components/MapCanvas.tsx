@@ -18,7 +18,7 @@ export function MapCanvas() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Load Google Maps script on web
+  // --- WEB: load Google Maps script
   useEffect(() => {
     if (Platform.OS !== "web") return;
 
@@ -33,7 +33,7 @@ export function MapCanvas() {
     }
   }, []);
 
-  // Place markers + fit bounds on web
+  // --- WEB: place markers + fit bounds
   useEffect(() => {
     if (
       Platform.OS === "web" &&
@@ -73,48 +73,39 @@ export function MapCanvas() {
     }
   }, [googleLoaded, quests]);
 
-  // Native (react-native-maps)
-  const MapViewModule = require("react-native-maps");
-  const MapView = MapViewModule.default || MapViewModule;
-  const Marker = MapViewModule.Marker || MapViewModule.default.Marker;
-
-  // 🔹 Refit bounds whenever the screen regains focus
-  // 🔹 Refit bounds whenever the screen regains focus
+  // --- NATIVE: always refit bounds when screen regains focus
   useFocusEffect(
     useCallback(() => {
-      if (
-        Platform.OS !== "android" &&
-        Platform.OS !== "ios" // ✅ include iOS if you want
-      )
-        return;
+      if (Platform.OS === "web") return;
       if (!mapRef.current || quests.length === 0) return;
 
-      const lats = quests.map((q) => q.latitude);
-      const lngs = quests.map((q) => q.longitude);
+      const lats = quests.map((q: any) => q.latitude);
+      const lngs = quests.map((q: any) => q.longitude);
 
       const minLat = Math.min(...lats);
       const maxLat = Math.max(...lats);
       const minLng = Math.min(...lngs);
       const maxLng = Math.max(...lngs);
 
-      // 🔹 Inflate bounds by 10%
-      const latMargin = (maxLat - minLat) * 0.1;
-      const lngMargin = (maxLng - minLng) * 0.1;
+      const latPadding = (maxLat - minLat) * 0.1;
+      const lngPadding = (maxLng - minLng) * 0.1;
+
+      console.log("📍 Refitting bounds on focus");
 
       mapRef.current.fitToCoordinates(
         [
-          { latitude: minLat - latMargin, longitude: minLng - lngMargin },
-          { latitude: maxLat + latMargin, longitude: maxLng + lngMargin },
+          { latitude: minLat - latPadding, longitude: minLng - lngPadding },
+          { latitude: maxLat + latPadding, longitude: maxLng + lngPadding },
         ],
         {
           edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-          animated: true,
+          animated: true, // ✅ always animate when refocusing
         },
       );
     }, [quests]),
   );
 
-  // Render branch
+  // --- WEB RENDER ---
   if (Platform.OS === "web") {
     if (!googleLoaded || isLoading) {
       return (
@@ -127,6 +118,9 @@ export function MapCanvas() {
       <div ref={mapRef} style={{ flex: 1, width: "100%", height: "100%" }} />
     );
   }
+
+  // --- NATIVE: require react-native-maps ONLY here
+  const { default: MapView, Marker } = require("react-native-maps");
 
   return (
     <View style={styles.container}>

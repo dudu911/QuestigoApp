@@ -1,3 +1,4 @@
+// app/(shell)/_layout.tsx
 import { View, StyleSheet, Pressable } from "react-native";
 import { router, Tabs } from "expo-router";
 import { MapCanvas } from "../../src/components/MapCanvas";
@@ -84,8 +85,7 @@ export default function ShellLayout() {
             ),
           }}
         />
-        {/* Map route exists but no tab shown */}
-        <Tabs.Screen name="map/index" options={{ href: null }} />
+        {/* ✅ Removed map/index screen to avoid duplicate MapCanvas */}
       </Tabs>
     </View>
   );

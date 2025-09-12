@@ -35,7 +35,11 @@
     "nextRiddle": "חידה הבאה",
     "showHint": "הצג רמז",
     "noHint": "אין רמז",
-    "loadingQuest": "טוען משימה…"
+    "loadingQuest": "טוען משימה…",
+    "createLobby": "צור לובי",
+    "joinLobby": "הצטרף ללובי",
+    "inside": "אתה בתוך אזור החידה 🎯",
+    "outside": "אתה מחוץ לאזור החידה 🚶"
   },
   "team": {
     "title": "צוות",

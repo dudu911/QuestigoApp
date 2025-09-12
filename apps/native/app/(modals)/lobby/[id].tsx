@@ -1,107 +1,12 @@
 // app/(modals)/lobby/[id].tsx
-import React, { useEffect } from "react";
-import { useLocalSearchParams, router } from "expo-router";
+import React from "react";
+import { useLocalSearchParams } from "expo-router";
 import { StyledView, StyledText, StyledButton } from "@repo/ui";
-import { useAppDispatch, useAppSelector } from "@redux/hooks";
-import {
-  setLobby,
-  setPlayers,
-  resetLobby,
-} from "../../../src/redux/lobbySlice";
-import {
-  fetchLobbyWithPlayers,
-  startLobby,
-  setPlayerReady,
-  ensurePlayerInLobby,
-  leaveLobby,
-  kickPlayer,
-} from "../../../src/services/lobbyService";
-import { RootState } from "@redux/store";
-import { supabase } from "@services/supabaseClient";
+import { useLobby } from "../../../src/hooks/useLobby";
 
 export default function LobbyModal() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const dispatch = useAppDispatch();
-
-  const { lobbyId, code, players, status, questId } = useAppSelector(
-    (s) => s.lobby,
-  );
-  const userId = useAppSelector((s: RootState) => s.auth.user?.id);
-
-  const me = players.find((p) => p.playerId === userId);
-  const allReady = players.length > 0 && players.every((p) => p.isReady);
-
-  // 🔹 Initial fetch only (realtime handled by middleware)
-  useEffect(() => {
-    if (!id) return;
-
-    fetchLobbyWithPlayers(id).then(({ lobby, players }) => {
-      dispatch(
-        setLobby({
-          id: lobby.id,
-          code: lobby.code,
-          status: lobby.status,
-          questId: lobby.questId,
-          hostId: lobby.hostId,
-        }),
-      );
-      dispatch(setPlayers(players));
-
-      if (lobby.status === "active" && lobby.questId) {
-        router.replace(`/quest/${lobby.questId}`);
-      }
-    });
-
-    return () => {
-      dispatch(resetLobby());
-    };
-  }, [id]);
-
-  // 🔹 Auto-redirect if lobby becomes active
-  useEffect(() => {
-    if (status === "active" && questId) {
-      router.replace(`/quest/${questId}`);
-    }
-  }, [status, questId]);
-
-  // 🔹 Ensure current user is in the lobby
-  useEffect(() => {
-    if (!id || !userId) return;
-
-    ensurePlayerInLobby(id, userId).catch((err) =>
-      console.error("❌ Failed to join lobby:", err),
-    );
-
-    return () => {
-      if (userId) {
-        const me = players.find((p) => p.playerId === userId);
-        leaveLobby(id, userId, me?.isHost ?? false).catch((err) =>
-          console.error("❌ Failed to leave lobby:", err),
-        );
-      }
-      dispatch(resetLobby());
-    };
-  }, [id, userId]);
-
-  useEffect(() => {
-    if (!id) return;
-
-    // 🔍 Debug subscription (logs all events from lobby_players)
-    const debugChannel = supabase
-      .channel("debug:lobby_players")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "lobby_players" },
-        (payload) => {
-          console.log("🔔 Debug payload:", payload);
-        },
-      )
-      .subscribe((status) => console.log("📡 Debug status:", status));
-
-    return () => {
-      debugChannel.unsubscribe();
-    };
-  }, [id]);
+  const { code, players, me, allReady, actions } = useLobby(id);
 
   return (
     <StyledView flex={1} padding="lg" backgroundColor="white">
@@ -123,16 +28,10 @@ export default function LobbyModal() {
             {p.isReady ? "✅" : "❌"}
           </StyledText>
 
-          {me?.isHost && p.playerId !== userId && (
+          {me?.isHost && p.playerId !== me.playerId && (
             <StyledButton
               variant="secondary"
-              onPress={async () => {
-                try {
-                  await kickPlayer(lobbyId!, me.playerId, p.playerId);
-                } catch (err) {
-                  console.error("❌ Failed to kick player:", err);
-                }
-              }}
+              onPress={() => actions.kick(p.playerId)}
             >
               Kick
             </StyledButton>
@@ -143,26 +42,7 @@ export default function LobbyModal() {
       {me && (
         <StyledButton
           variant={me.isReady ? "secondary" : "primary"}
-          onPress={async () => {
-            try {
-              // ✅ Optimistic update
-              dispatch(
-                setPlayers(
-                  players.map((p) =>
-                    p.playerId === me.playerId
-                      ? { ...p, isReady: !me.isReady }
-                      : p,
-                  ),
-                ),
-              );
-
-              // ✅ Persist to DB
-              await setPlayerReady(me.playerId, lobbyId!, !me.isReady);
-            } catch (err) {
-              console.error("❌ Failed to toggle ready:", err);
-              // Optionally rollback
-            }
-          }}
+          onPress={actions.toggleReady}
           style={{ marginTop: 16 }}
         >
           {me.isReady ? "Unready" : "Ready"}
@@ -173,13 +53,7 @@ export default function LobbyModal() {
         <StyledButton
           variant="primary"
           disabled={!allReady}
-          onPress={async () => {
-            try {
-              await startLobby(lobbyId!);
-            } catch (err) {
-              console.error("❌ Failed to start quest:", err);
-            }
-          }}
+          onPress={actions.start}
           style={{ marginTop: 16 }}
         >
           {allReady ? "Start Quest" : "Waiting for players..."}
@@ -189,14 +63,7 @@ export default function LobbyModal() {
       {me && (
         <StyledButton
           variant="secondary"
-          onPress={async () => {
-            try {
-              await leaveLobby(lobbyId!, me.playerId, me.isHost);
-              router.replace("/home");
-            } catch (err) {
-              console.error("❌ Failed to leave lobby:", err);
-            }
-          }}
+          onPress={actions.leave}
           style={{ marginTop: 16 }}
         >
           Leave Lobby
@@ -205,7 +72,7 @@ export default function LobbyModal() {
 
       <StyledButton
         variant="secondary"
-        onPress={() => router.back()}
+        onPress={() => actions.leave()}
         style={{ marginTop: 16 }}
       >
         Close Lobby

@@ -5,6 +5,14 @@ import { useQuery } from "@tanstack/react-query";
 import { router, useFocusEffect } from "expo-router";
 import { fetchQuests } from "../services/questService";
 
+// Import react-native-maps at module level to prevent duplicate registration
+let NativeMapView: any, NativeMarker: any;
+if (Platform.OS !== "web") {
+  const maps = require("react-native-maps");
+  NativeMapView = maps.default;
+  NativeMarker = maps.Marker;
+}
+
 // --- Helpers for web zoom calculation ---
 const WORLD_DIM = { height: 256, width: 256 };
 const ZOOM_MAX = 21;
@@ -184,12 +192,10 @@ export function MapCanvas() {
     );
   }
 
-  // --- NATIVE: require react-native-maps ONLY here
-  const { default: MapView, Marker } = require("react-native-maps");
-
+  // --- NATIVE RENDER ---
   return (
     <View style={styles.container}>
-      <MapView
+      <NativeMapView
         ref={mapRef}
         key={locale}
         style={StyleSheet.absoluteFill}
@@ -206,7 +212,7 @@ export function MapCanvas() {
               typeof q.latitude === "number" && typeof q.longitude === "number",
           )
           .map((q) => (
-            <Marker
+            <NativeMarker
               key={q.id}
               coordinate={{ latitude: q.latitude, longitude: q.longitude }}
               title={q.title || ""}
@@ -215,7 +221,7 @@ export function MapCanvas() {
               onPress={() => router.push(`/quest/${q.id}`)}
             />
           ))}
-      </MapView>
+      </NativeMapView>
     </View>
   );
 }

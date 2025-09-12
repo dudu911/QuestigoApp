@@ -15,14 +15,6 @@ import { demoUsers } from "../src/utils/dummyUsers"; // ✅ import list
 
 const client = new QueryClient();
 
-// function simpleUUID() {
-//   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-//     const r = (Math.random() * 16) | 0;
-//     const v = c === "x" ? r : (r & 0x3) | 0x8;
-//     return v.toString(16);
-//   });
-// }
-
 export default function RootLayout() {
   const dispatch = store.dispatch;
   useEffect(() => {
@@ -31,19 +23,6 @@ export default function RootLayout() {
       dispatch(setUser(demoUsers[0]));
     }
   }, [dispatch]);
-
-  // useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       await ensureDummyUserExists();
-  //       dispatch(
-  //         setUser({ ...dummyUser, username: dummyUser.username ?? "DemoUser" })
-  //       ); // put in Redux so app thinks you’re logged in
-  //     } catch (err) {
-  //       console.error("❌ Failed to ensure dummy user:", err);
-  //     }
-  //   })();
-  // }, []);
 
   return (
     <I18nextProvider i18n={i18n}>

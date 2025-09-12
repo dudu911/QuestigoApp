@@ -1,5 +1,6 @@
+// src/components/LanguageToggle.tsx
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text } from "react-native";
 import { Globe } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 
@@ -14,38 +15,24 @@ export function LanguageToggle() {
   };
 
   return (
-    <View
+    <Pressable
+      onPress={toggleLanguage}
       style={{
-        position: "absolute",
-        top: 50, // adjust for SafeArea if needed
-        right: 16,
+        flexDirection: "row",
         alignItems: "center",
+        backgroundColor: "white",
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: "#ddd",
+        marginRight: 8, // spacing before the user button
       }}
     >
-      <Pressable
-        onPress={toggleLanguage}
-        style={{
-          backgroundColor: "white",
-          padding: 8,
-          borderRadius: 20,
-          shadowColor: "#000",
-          shadowOpacity: 0.15,
-          shadowRadius: 4,
-          elevation: 4,
-        }}
-      >
-        <Globe size={20} color="black" />
-      </Pressable>
-      {/* ✅ Underline current language */}
-      <Text
-        style={{
-          marginTop: 4,
-          fontSize: 12,
-          fontWeight: "600",
-        }}
-      >
+      <Globe size={18} color="black" style={{ marginRight: 4 }} />
+      <Text style={{ fontSize: 12, fontWeight: "600" }}>
         {isHebrew ? "HE" : "EN"}
       </Text>
-    </View>
+    </Pressable>
   );
 }

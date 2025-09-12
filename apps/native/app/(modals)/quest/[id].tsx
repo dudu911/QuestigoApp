@@ -1,138 +1,25 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
+// app/(modals)/quest/[id].tsx
+import { useLocalSearchParams } from "expo-router";
 import { StyledView, StyledText, StyledButton } from "@repo/ui";
-import * as Location from "expo-location";
-import { useAppSelector, useAppDispatch } from "@redux/hooks";
-import { RootState } from "../../../src/redux/store";
-import {
-  setActiveQuestId,
-  nextRiddle,
-  setHintUsed,
-} from "../../../src/redux/questSlice";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "../../../src/services/supabaseClient";
-import { getDistanceFromLatLonInM } from "../../../src/utils/geo";
-import { mapRiddleRowToUI } from "../../../src/mappers/riddleMapper";
-import { mapQuestRowToUI } from "../../../src/mappers/questMapper";
 import { useTranslation } from "react-i18next";
-import { RiddleRow, QuestRow } from "@repo/types";
-import { createLobby } from "@services/index";
-
-const GEOFENCE_MARGIN = 50;
-
-// --- Query function ---
-async function fetchQuestWithRiddles(id: string): Promise<{
-  quest: QuestRow;
-  riddles: RiddleRow[];
-}> {
-  const { data, error } = await supabase
-    .from("quests")
-    .select(
-      `
-      id,
-      country,
-      city,
-      quest_translations (*),
-      riddles (
-        id,
-        quest_id,
-        latitude,
-        longitude,
-        radius_m,
-        image,
-        riddle_translations (*)
-      )
-    `,
-    )
-    .eq("id", id)
-    .single();
-
-  if (error || !data) throw error ?? new Error("Quest not found");
-  return {
-    quest: data as unknown as QuestRow,
-    riddles: (data.riddles ?? []) as RiddleRow[],
-  };
-}
+import { useQuest } from "../../../src/hooks/useQuest";
 
 export default function QuestModal() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { i18n, t } = useTranslation();
   const locale = i18n.language.startsWith("he") ? "he" : "en";
 
-  const dispatch = useAppDispatch();
-  const riddleIndex = useAppSelector(
-    (s: RootState) => s.quest.currentRiddleIndex,
-  );
-  const hintUsed = useAppSelector((s: RootState) => s.quest.hintUsed);
-  const userId = useAppSelector((s: RootState) => s.auth.user?.id);
-
-  const [userCoords, setUserCoords] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
-  const [distance, setDistance] = useState<number | null>(null);
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["quest", id],
-    queryFn: () => fetchQuestWithRiddles(id!),
-    enabled: !!id,
-    staleTime: 1000 * 60 * 5,
-  });
-
-  const quest = data ? mapQuestRowToUI(data.quest, locale) : null;
-  const riddles = data
-    ? data.riddles.map((r) => mapRiddleRowToUI(r, locale))
-    : [];
-
-  // Track active quest id
-  useEffect(() => {
-    if (id) dispatch(setActiveQuestId(id));
-  }, [id, dispatch]);
-
-  // ✅ Reset quest when modal closes (covers X close)
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        console.log("QuestModal lost focus → resetting quest state");
-        dispatch(setActiveQuestId(null));
-      };
-    }, [dispatch]),
-  );
-
-  // ✅ Reset quest when modal unmounts (covers router.back & edge cases)
-  useEffect(() => {
-    return () => {
-      console.log("QuestModal unmounted → resetting quest state");
-      dispatch(setActiveQuestId(null));
-    };
-  }, [dispatch]);
-
-  // Get user location
-  useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === "granted") {
-        const loc = await Location.getCurrentPositionAsync({});
-        setUserCoords({ lat: loc.coords.latitude, lng: loc.coords.longitude });
-      }
-    })();
-  }, []);
-
-  // Compute distance
-  useEffect(() => {
-    if (userCoords && riddles.length > 0) {
-      const r = riddles[riddleIndex];
-      if (r) {
-        const d = getDistanceFromLatLonInM(
-          userCoords.lat,
-          userCoords.lng,
-          r.lat,
-          r.lng,
-        );
-        setDistance(d);
-      }
-    }
-  }, [userCoords, riddles, riddleIndex]);
+  const {
+    quest,
+    currentRiddle,
+    riddleIndex,
+    hintUsed,
+    insideGeofence,
+    isLoading,
+    isError,
+    actions,
+    riddles,
+  } = useQuest(id, locale);
 
   if (isLoading) {
     return (
@@ -146,18 +33,12 @@ export default function QuestModal() {
     return (
       <StyledView flex padding="lg">
         <StyledText>{t("common.error")}</StyledText>
-        <StyledButton variant="secondary" onPress={() => router.back()}>
+        <StyledButton variant="secondary" onPress={actions.close}>
           {t("common.close")}
         </StyledButton>
       </StyledView>
     );
   }
-
-  const currentRiddle = riddles[riddleIndex];
-  const insideGeofence =
-    distance !== null &&
-    currentRiddle &&
-    distance <= (currentRiddle.radiusM ?? 30) + GEOFENCE_MARGIN;
 
   return (
     <StyledView flex={1} padding="lg" backgroundColor="white">
@@ -179,21 +60,19 @@ export default function QuestModal() {
 
           <StyledText marginBottom="sm">
             {t("quest.distance")}:{" "}
-            {distance ? `${distance.toFixed(0)}m` : t("quest.unknown")}
+            {insideGeofence ? t("quest.inside") : t("quest.outside")}
           </StyledText>
 
-          {!hintUsed && (
+          {!hintUsed ? (
             <StyledButton
               variant="secondary"
               disabled={!insideGeofence}
-              onPress={() => dispatch(setHintUsed())}
+              onPress={actions.showHint}
               style={{ marginBottom: 8 }}
             >
               {t("quest.showHint")}
             </StyledButton>
-          )}
-
-          {hintUsed && (
+          ) : (
             <StyledText marginBottom="sm">
               💡 {currentRiddle.hint ?? t("quest.noHint")}
             </StyledText>
@@ -202,14 +81,7 @@ export default function QuestModal() {
           <StyledButton
             variant="primary"
             disabled={!insideGeofence}
-            onPress={() => {
-              if (riddleIndex < riddles.length - 1) {
-                dispatch(nextRiddle());
-              } else {
-                dispatch(setActiveQuestId(null));
-                router.replace("/home");
-              }
-            }}
+            onPress={actions.next}
           >
             {riddleIndex < riddles.length - 1
               ? t("quest.nextRiddle")
@@ -220,35 +92,27 @@ export default function QuestModal() {
         <StyledText>{t("quest.noRiddlesFound")}</StyledText>
       )}
 
-      {userId && (
-        <>
-          <StyledButton
-            variant="primary"
-            onPress={async () => {
-              try {
-                const lobby = await createLobby(userId, quest.id!);
-                router.push(`/lobby/${lobby.lobby.id}`);
-              } catch (err) {
-                console.error("❌ Failed to create lobby:", err);
-              }
-            }}
-            style={{ marginTop: 16 }}
-          >
-            Create Lobby for this Quest
-          </StyledButton>
+      {/* Multiplayer actions */}
+      <StyledButton
+        variant="primary"
+        onPress={actions.createLobby}
+        style={{ marginTop: 16 }}
+      >
+        {t("quest.createLobby")}
+      </StyledButton>
 
-          <StyledButton
-            variant="secondary"
-            onPress={() => router.push("/(modals)/lobby/join-lobby")}
-            style={{ marginTop: 8 }}
-          >
-            Join Lobby by Code
-          </StyledButton>
-        </>
-      )}
       <StyledButton
         variant="secondary"
-        onPress={() => router.back()}
+        onPress={actions.joinLobby}
+        style={{ marginTop: 8 }}
+      >
+        {t("quest.joinLobby")}
+      </StyledButton>
+
+      {/* Always last */}
+      <StyledButton
+        variant="secondary"
+        onPress={actions.close}
         style={{ marginTop: 16 }}
       >
         {t("common.close")}

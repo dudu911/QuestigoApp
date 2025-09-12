@@ -35,7 +35,11 @@
     "noRiddlesFound": "No riddles found.",
     "showHint": "Show Hint",
     "noHint": "No hint",
-    "loadingQuest": "Loading quest…"
+    "loadingQuest": "Loading quest…",
+    "createLobby": "Create Lobby",
+    "joinLobby": "Join Lobby",
+    "inside": "You are inside the riddle area 🎯",
+    "outside": "You are outside the riddle area 🚶"
   },
   "team": {
     "title": "Team",

@@ -1,3 +1,4 @@
+// src/components/MapCanvas.tsx
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { View, StyleSheet, Text, Platform } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -99,7 +100,6 @@ export function MapCanvas() {
       });
 
       if (!bounds.isEmpty()) {
-        // --- Inflate bounds by 10% margin
         const ne = bounds.getNorthEast();
         const sw = bounds.getSouthWest();
 
@@ -126,10 +126,8 @@ export function MapCanvas() {
 
         const targetZoom = getBoundsZoomLevel(extendedBounds, mapDim);
 
-        // --- animate pan
         map.panTo(targetCenter);
 
-        // --- animate zoom
         let currentZoom = map.getZoom()!;
         const step = targetZoom > currentZoom ? 1 : -1;
 
@@ -154,27 +152,32 @@ export function MapCanvas() {
       if (Platform.OS === "web") return;
       if (!mapRef.current || quests.length === 0) return;
 
-      const lats = quests.map((q: any) => q.latitude);
-      const lngs = quests.map((q: any) => q.longitude);
+      // ✅ Delay ensures map is mounted before fitting
+      const timer = setTimeout(() => {
+        const lats = quests.map((q: any) => q.latitude);
+        const lngs = quests.map((q: any) => q.longitude);
 
-      const minLat = Math.min(...lats);
-      const maxLat = Math.max(...lats);
-      const minLng = Math.min(...lngs);
-      const maxLng = Math.max(...lngs);
+        const minLat = Math.min(...lats);
+        const maxLat = Math.max(...lats);
+        const minLng = Math.min(...lngs);
+        const maxLng = Math.max(...lngs);
 
-      const latPadding = (maxLat - minLat) * 0.1;
-      const lngPadding = (maxLng - minLng) * 0.1;
+        const latPadding = (maxLat - minLat) * 0.1;
+        const lngPadding = (maxLng - minLng) * 0.1;
 
-      mapRef.current.fitToCoordinates(
-        [
-          { latitude: minLat - latPadding, longitude: minLng - lngPadding },
-          { latitude: maxLat + latPadding, longitude: maxLng + lngPadding },
-        ],
-        {
-          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-          animated: true,
-        },
-      );
+        mapRef.current.fitToCoordinates(
+          [
+            { latitude: minLat - latPadding, longitude: minLng - lngPadding },
+            { latitude: maxLat + latPadding, longitude: maxLng + lngPadding },
+          ],
+          {
+            edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+            animated: true,
+          },
+        );
+      }, 50);
+
+      return () => clearTimeout(timer);
     }, [quests]),
   );
 
@@ -197,8 +200,7 @@ export function MapCanvas() {
     <View style={styles.container}>
       <NativeMapView
         ref={mapRef}
-        key={locale}
-        style={StyleSheet.absoluteFill}
+        style={StyleSheet.absoluteFill} // ❌ removed key={locale}
         initialRegion={{
           latitude: 31.78,
           longitude: 35.21,

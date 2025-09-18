@@ -76,3 +76,52 @@ export async function fetchRiddlesForQuest(
     locale === "en" || locale === "he" ? locale : "en";
   return parsed.data.map((row) => mapRiddleRowToUI(row, safeLocale));
 }
+
+// ✅ Save or update quest progress
+export async function saveQuestProgress(
+  userId: string,
+  questId: string,
+  riddleIndex: number,
+  hintUsed: boolean,
+) {
+  const { data, error } = await supabase
+    .from("quest_progress")
+    .upsert(
+      {
+        user_id: userId,
+        quest_id: questId,
+        riddle_index: riddleIndex,
+        hint_used: hintUsed,
+      },
+      { onConflict: "user_id,quest_id" },
+    )
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// ✅ Load quest progress for a user
+export async function loadQuestProgress(userId: string, questId: string) {
+  const { data, error } = await supabase
+    .from("quest_progress")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("quest_id", questId)
+    .single();
+
+  if (error && error.code !== "PGRST116") throw error; // ignore "no rows found"
+  return data ?? null;
+}
+
+// ✅ Reset quest progress (e.g., when finishing/abandoning a quest)
+export async function resetQuestProgress(userId: string, questId: string) {
+  const { error } = await supabase
+    .from("quest_progress")
+    .delete()
+    .eq("user_id", userId)
+    .eq("quest_id", questId);
+
+  if (error) throw error;
+}

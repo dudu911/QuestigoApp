@@ -8,10 +8,19 @@ export function LanguageToggle() {
   const { i18n } = useTranslation();
   const isHebrew = i18n.language.startsWith("he");
 
-  const toggleLanguage = () => {
-    const newLocale = isHebrew ? "en" : "he";
-    console.log("[LanguageToggle] changing language:", newLocale);
-    i18n.changeLanguage(newLocale);
+  const toggleLanguage = async () => {
+    try {
+      const newLocale = isHebrew ? "en" : "he";
+      console.log("[LanguageToggle] changing language:", newLocale);
+
+      // ✅ Add delay to prevent race conditions with map re-rendering
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await i18n.changeLanguage(newLocale);
+
+      console.log("[LanguageToggle] language changed successfully");
+    } catch (error) {
+      console.error("[LanguageToggle] Error changing language:", error);
+    }
   };
 
   return (

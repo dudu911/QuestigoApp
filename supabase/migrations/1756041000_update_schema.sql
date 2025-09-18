@@ -1,13 +1,44 @@
+-- Track per-user quest progress
+-- Quest progress table
+create table if not exists quest_progress (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references profiles(id) on delete cascade,
+  quest_id uuid references quests(id) on delete cascade,
+  riddle_index int not null default 0,
+  hint_used boolean not null default false,
+  updated_at timestamptz default now(),
+
+  unique (user_id, quest_id)
+);
+
+-- Function to auto-update updated_at
+create or replace function update_updated_at_column()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+-- Trigger to update timestamp on row update
+drop trigger if exists set_updated_at on quest_progress;
+create trigger set_updated_at
+before update on quest_progress
+for each row
+execute procedure update_updated_at_column();
+
+
+-- Existing profile policy
 create policy "Users can insert their own profile"
 on profiles for insert
 with check (auth.uid() = id);
 
+-- Add coordinates to quests
 alter table quests
   add column latitude double precision,
   add column longitude double precision;
 
-
-  -- Base riddle table (structural only)
+-- Base riddle table (structural only)
 create table riddles (
   id uuid primary key default gen_random_uuid(),
   quest_id uuid references quests(id) on delete cascade,

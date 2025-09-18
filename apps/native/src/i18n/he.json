@@ -39,7 +39,10 @@
     "createLobby": "צור לובי",
     "joinLobby": "הצטרף ללובי",
     "inside": "אתה בתוך אזור החידה 🎯",
-    "outside": "אתה מחוץ לאזור החידה 🚶"
+    "outside": "אתה מחוץ לאזור החידה 🚶",
+    "resumed": "המשכת בחידה {{index}} {{hint}}",
+    "hintUsed": "נעשה שימוש ברמז",
+    "startSingle": "התחל משימה (שחקן יחיד)"
   },
   "team": {
     "title": "צוות",

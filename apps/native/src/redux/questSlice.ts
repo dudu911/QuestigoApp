@@ -1,3 +1,4 @@
+// src/redux/questSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface QuestState {
@@ -25,11 +26,28 @@ const questSlice = createSlice({
       state.currentRiddleIndex += 1;
       state.hintUsed = false;
     },
+    setRiddleIndex(state, action: PayloadAction<number>) {
+      state.currentRiddleIndex = action.payload;
+      state.hintUsed = false; // reset hint when jumping directly
+    },
     setHintUsed(state) {
       state.hintUsed = true;
+    },
+    // ✅ new: reset everything explicitly
+    resetQuest(state) {
+      state.activeQuestId = null;
+      state.currentRiddleIndex = 0;
+      state.hintUsed = false;
     },
   },
 });
 
-export const { setActiveQuestId, nextRiddle, setHintUsed } = questSlice.actions;
+export const {
+  setActiveQuestId,
+  nextRiddle,
+  setRiddleIndex,
+  setHintUsed,
+  resetQuest, // export new action
+} = questSlice.actions;
+
 export default questSlice.reducer;

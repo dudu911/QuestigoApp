@@ -39,7 +39,10 @@
     "createLobby": "Create Lobby",
     "joinLobby": "Join Lobby",
     "inside": "You are inside the riddle area 🎯",
-    "outside": "You are outside the riddle area 🚶"
+    "outside": "You are outside the riddle area 🚶",
+    "resumed": "Resumed at riddle {{index}} {{hint}}",
+    "hintUsed": "(hint already used)",
+    "startSingle": "Start Quest (Single Player)"
   },
   "team": {
     "title": "Team",

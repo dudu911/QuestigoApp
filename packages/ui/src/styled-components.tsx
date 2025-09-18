@@ -13,13 +13,17 @@ import { useDirection } from "../../../apps/native/src/i18n/DirectionProvider";
 // ---------------- StyledView ----------------
 interface StyledViewProps {
   children?: React.ReactNode;
-  flex?: number | boolean;
+  flex?: boolean | number;
   padding?: keyof typeof theme.spacing;
   margin?: keyof typeof theme.spacing;
+  marginTop?: keyof typeof theme.spacing;
+  marginBottom?: keyof typeof theme.spacing;
+  marginLeft?: keyof typeof theme.spacing;
+  marginRight?: keyof typeof theme.spacing;
   backgroundColor?: string;
   alignItems?: ViewStyle["alignItems"];
   justifyContent?: ViewStyle["justifyContent"];
-  row?: boolean; // 👈 auto RTL row
+  row?: boolean;
   style?: ViewStyle;
 }
 
@@ -28,6 +32,10 @@ export const StyledView: React.FC<StyledViewProps> = ({
   flex,
   padding,
   margin,
+  marginTop,
+  marginBottom,
+  marginLeft,
+  marginRight,
   backgroundColor,
   alignItems,
   justifyContent,
@@ -41,6 +49,10 @@ export const StyledView: React.FC<StyledViewProps> = ({
     ...(flex && { flex: typeof flex === "number" ? flex : 1 }),
     ...(padding && { padding: theme.spacing[padding] }),
     ...(margin && { margin: theme.spacing[margin] }),
+    ...(marginTop && { marginTop: theme.spacing[marginTop] }),
+    ...(marginBottom && { marginBottom: theme.spacing[marginBottom] }),
+    ...(marginLeft && { marginLeft: theme.spacing[marginLeft] }),
+    ...(marginRight && { marginRight: theme.spacing[marginRight] }),
     ...(backgroundColor && { backgroundColor }),
     ...(alignItems && { alignItems }),
     ...(justifyContent && { justifyContent }),

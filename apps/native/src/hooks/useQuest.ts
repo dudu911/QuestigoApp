@@ -5,7 +5,13 @@ import * as Location from "expo-location";
 import { useQuery } from "@tanstack/react-query";
 import { useAppDispatch, useAppSelector } from "@redux/hooks";
 import { RootState } from "../redux/store";
-import { setActiveQuestId, nextRiddle, setHintUsed } from "../redux/questSlice";
+import {
+  setActiveQuestId,
+  nextRiddle,
+  setHintUsed,
+  setRiddleIndex,
+  resetQuest,
+} from "../redux/questSlice";
 import { supabase } from "../services/supabaseClient";
 import { mapQuestRowToUI } from "../mappers/questMapper";
 import { mapRiddleRowToUI } from "../mappers/riddleMapper";
@@ -61,6 +67,8 @@ export function useQuest(id: string | undefined, locale: "en" | "he") {
     lng: number;
   } | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
+  const [resumed, setResumed] = useState(false);
+  const [progressChecked, setProgressChecked] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["quest", id],
@@ -80,19 +88,56 @@ export function useQuest(id: string | undefined, locale: "en" | "he") {
     if (id) dispatch(setActiveQuestId(id));
   }, [id, dispatch]);
 
-  // Reset quest when modal closes (focus lost or unmounted)
+  // Reset quest only when modal closes (not mid-query)
   useFocusEffect(
     useCallback(() => {
       return () => {
-        dispatch(setActiveQuestId(null));
+        dispatch(resetQuest());
+        setResumed(false);
       };
     }, [dispatch]),
   );
   useEffect(() => {
     return () => {
-      dispatch(setActiveQuestId(null));
+      dispatch(resetQuest());
+      setResumed(false);
     };
   }, [dispatch]);
+
+  // Load quest progress from DB
+  useEffect(() => {
+    if (!id || !userId) return;
+
+    (async () => {
+      const { data: progress, error } = await supabase
+        .from("quest_progress")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("quest_id", id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("❌ Failed to fetch quest progress:", error);
+        setProgressChecked(true);
+        return;
+      }
+
+      if (progress) {
+        dispatch(setRiddleIndex(progress.riddle_index));
+        if (progress.hint_used) dispatch(setHintUsed());
+        setResumed(progress.riddle_index > 0 || progress.hint_used);
+      } else {
+        await supabase.from("quest_progress").insert({
+          user_id: userId,
+          quest_id: id,
+          riddle_index: 0,
+          hint_used: false,
+        });
+        setResumed(false);
+      }
+      setProgressChecked(true);
+    })();
+  }, [id, userId, dispatch]);
 
   // Get user location
   useEffect(() => {
@@ -127,19 +172,47 @@ export function useQuest(id: string | undefined, locale: "en" | "he") {
     currentRiddle &&
     distance <= (currentRiddle.radiusM ?? 30) + GEOFENCE_MARGIN;
 
+  const persistProgress = async (newIndex: number, newHintUsed: boolean) => {
+    if (!userId || !quest) return;
+    await supabase.from("quest_progress").upsert(
+      {
+        user_id: userId,
+        quest_id: quest.id!,
+        riddle_index: newIndex,
+        hint_used: newHintUsed,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,quest_id" },
+    );
+  };
+
   const actions = {
-    next: () => {
-      // ✅ Optimistic UI update
-      dispatch(nextRiddle());
+    next: async () => {
+      const newIndex = riddleIndex + 1;
 
-      // 🔜 Optional: save progress to DB later
-      // await supabase.from("quest_progress").upsert({ user_id: userId, quest_id: quest?.id, riddle_index: riddleIndex + 1 });
+      if (newIndex < riddles.length) {
+        dispatch(nextRiddle());
+        await persistProgress(newIndex, false);
+      } else {
+        // Quest completed: clear progress + reset
+        dispatch(resetQuest());
+        setResumed(false);
+
+        if (userId && quest) {
+          await supabase
+            .from("quest_progress")
+            .delete()
+            .eq("user_id", userId)
+            .eq("quest_id", quest.id!);
+        }
+
+        // Delay navigation to avoid query race
+        setTimeout(() => router.replace("/home"), 100);
+      }
     },
-    showHint: () => {
-      // ✅ Optimistic UI update
+    showHint: async () => {
       dispatch(setHintUsed());
-
-      // 🔜 Optional: save hint usage to DB
+      await persistProgress(riddleIndex, true);
     },
     createLobby: async () => {
       if (!userId || !quest) return;
@@ -160,5 +233,7 @@ export function useQuest(id: string | undefined, locale: "en" | "he") {
     isLoading,
     isError,
     actions,
+    resumed,
+    progressChecked,
   };
 }

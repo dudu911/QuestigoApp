@@ -49,10 +49,29 @@ export function MapCanvas() {
   const { i18n } = useTranslation();
   const locale = i18n.language.startsWith("he") ? "he" : "en";
 
+  // ✅ Use initial locale only to prevent map crashes
+  const [initialLocale] = useState(locale);
+
   const { data: quests = [], isLoading } = useQuery({
-    queryKey: ["quests", locale],
-    queryFn: () => fetchQuests(locale),
+    queryKey: ["quests", initialLocale], // ✅ Use initial locale only
+    queryFn: () => fetchQuests(initialLocale),
     staleTime: 1000 * 60 * 5,
+  });
+
+  // ✅ Filter and validate quest data to prevent nil objects
+  const validQuests = quests.filter((q) => {
+    return (
+      q &&
+      q.id &&
+      typeof q.latitude === "number" &&
+      typeof q.longitude === "number" &&
+      !isNaN(q.latitude) &&
+      !isNaN(q.longitude) &&
+      q.latitude >= -90 &&
+      q.latitude <= 90 &&
+      q.longitude >= -180 &&
+      q.longitude <= 180
+    );
   });
 
   // --- WEB: load Google Maps script
@@ -76,7 +95,7 @@ export function MapCanvas() {
       Platform.OS === "web" &&
       googleLoaded &&
       mapRef.current &&
-      quests.length > 0
+      validQuests.length > 0
     ) {
       const map = new window.google.maps.Map(mapRef.current, {
         center: { lat: 31.78, lng: 35.21 },
@@ -85,14 +104,11 @@ export function MapCanvas() {
 
       const bounds = new window.google.maps.LatLngBounds();
 
-      quests.forEach((q: any) => {
-        if (typeof q.latitude !== "number" || typeof q.longitude !== "number")
-          return;
-
+      validQuests.forEach((q: any) => {
         const marker = new window.google.maps.Marker({
           position: { lat: q.latitude, lng: q.longitude },
           map,
-          title: q.title,
+          title: q.title || "Quest",
         });
 
         marker.addListener("click", () => router.push(`/quest/${q.id}`));
@@ -144,18 +160,20 @@ export function MapCanvas() {
         }, 80);
       }
     }
-  }, [googleLoaded, quests]);
+  }, [googleLoaded, validQuests]);
 
   // --- NATIVE: refit bounds when screen regains focus
   useFocusEffect(
     useCallback(() => {
       if (Platform.OS === "web") return;
-      if (!mapRef.current || quests.length === 0) return;
+      if (!mapRef.current || validQuests.length === 0) return;
 
       // ✅ Delay ensures map is mounted before fitting
       const timer = setTimeout(() => {
-        const lats = quests.map((q: any) => q.latitude);
-        const lngs = quests.map((q: any) => q.longitude);
+        const lats = validQuests.map((q: any) => q.latitude);
+        const lngs = validQuests.map((q: any) => q.longitude);
+
+        if (lats.length === 0 || lngs.length === 0) return;
 
         const minLat = Math.min(...lats);
         const maxLat = Math.max(...lats);
@@ -178,7 +196,7 @@ export function MapCanvas() {
       }, 50);
 
       return () => clearTimeout(timer);
-    }, [quests]),
+    }, [validQuests]),
   );
 
   // --- WEB RENDER ---
@@ -200,29 +218,30 @@ export function MapCanvas() {
     <View style={styles.container}>
       <NativeMapView
         ref={mapRef}
-        style={StyleSheet.absoluteFill} // ❌ removed key={locale}
+        style={StyleSheet.absoluteFill}
         initialRegion={{
           latitude: 31.78,
           longitude: 35.21,
           latitudeDelta: 1.5,
           longitudeDelta: 1.5,
         }}
+        showsUserLocation={false}
+        showsMyLocationButton={false}
+        toolbarEnabled={false}
       >
-        {quests
-          .filter(
-            (q) =>
-              typeof q.latitude === "number" && typeof q.longitude === "number",
-          )
-          .map((q) => (
-            <NativeMarker
-              key={q.id}
-              coordinate={{ latitude: q.latitude, longitude: q.longitude }}
-              title={q.title || ""}
-              description={q.description || ""}
-              pinColor="blue"
-              onPress={() => router.push(`/quest/${q.id}`)}
-            />
-          ))}
+        {validQuests.map((q) => (
+          <NativeMarker
+            key={q.id}
+            coordinate={{
+              latitude: q.latitude,
+              longitude: q.longitude,
+            }}
+            title={q.title || "Quest"}
+            description={q.description || ""}
+            pinColor="blue"
+            onPress={() => router.push(`/quest/${q.id}`)}
+          />
+        ))}
       </NativeMapView>
     </View>
   );

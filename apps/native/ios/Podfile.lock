@@ -17,7 +17,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLinking (7.0.5):
     - ExpoModulesCore
-  - ExpoLocalization (16.0.1):
+  - ExpoLocalization (17.0.7):
     - ExpoModulesCore
   - ExpoLocation (18.0.10):
     - ExpoModulesCore
@@ -1888,7 +1888,7 @@ DEPENDENCIES:
   - "ExpoHead (from `../../../node_modules/.pnpm/expo-router@4.0.21_da904bd50506f2fc849cb5282870f669/node_modules/expo-router/ios`)"
   - "ExpoKeepAwake (from `../../../node_modules/.pnpm/expo-keep-awake@14.0.3_expo@52.0.47_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babel+_19c4529636c8abdce802219ee282584b/node_modules/expo-keep-awake/ios`)"
   - "ExpoLinking (from `../../../node_modules/.pnpm/expo-linking@7.0.5_expo@52.0.47_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babel+core_c4c4a4f855ba3b5dda24647bea213cb8/node_modules/expo-linking/ios`)"
-  - "ExpoLocalization (from `../../../node_modules/.pnpm/expo-localization@16.0.1_expo@52.0.47_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babe_6aca14b21ec5a70ab12e53844ada12df/node_modules/expo-localization/ios`)"
+  - "ExpoLocalization (from `../../../node_modules/.pnpm/expo-localization@17.0.7_expo@52.0.47_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babe_8caa509a5223342591762c03335133f1/node_modules/expo-localization/ios`)"
   - "ExpoLocation (from `../../../node_modules/.pnpm/expo-location@18.0.10_expo@52.0.47_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babel+c_baa883a1c03b745c8296a6e50cfce3a7/node_modules/expo-location/ios`)"
   - "ExpoModulesCore (from `../../../node_modules/.pnpm/expo-modules-core@2.2.3/node_modules/expo-modules-core`)"
   - "ExpoSystemUI (from `../../../node_modules/.pnpm/expo-system-ui@4.0.9_expo@52.0.47_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babel+co_4fafc29178733b6ed3dd387953d2d966/node_modules/expo-system-ui/ios`)"
@@ -1991,7 +1991,7 @@ EXTERNAL SOURCES:
   ExpoLinking:
     :path: "../../../node_modules/.pnpm/expo-linking@7.0.5_expo@52.0.47_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babel+core_c4c4a4f855ba3b5dda24647bea213cb8/node_modules/expo-linking/ios"
   ExpoLocalization:
-    :path: "../../../node_modules/.pnpm/expo-localization@16.0.1_expo@52.0.47_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babe_6aca14b21ec5a70ab12e53844ada12df/node_modules/expo-localization/ios"
+    :path: "../../../node_modules/.pnpm/expo-localization@17.0.7_expo@52.0.47_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babe_8caa509a5223342591762c03335133f1/node_modules/expo-localization/ios"
   ExpoLocation:
     :path: "../../../node_modules/.pnpm/expo-location@18.0.10_expo@52.0.47_@babel+core@7.28.0_@babel+preset-env@7.28.0_@babel+c_baa883a1c03b745c8296a6e50cfce3a7/node_modules/expo-location/ios"
   ExpoModulesCore:
@@ -2147,7 +2147,7 @@ SPEC CHECKSUMS:
   ExpoHead: 1b9a42c4b1a2627b8c9ef478a48af59a2fb8c684
   ExpoKeepAwake: 2a5f15dd4964cba8002c9a36676319a3394c85c7
   ExpoLinking: 0381341519ca7180a3a057d20edb1cf6a908aaf4
-  ExpoLocalization: e36b911e04d371c6c6624ef818e56229bf51c498
+  ExpoLocalization: 6c6f0f89ad2822001ab0bc2eb6d4d980c77f080c
   ExpoLocation: ad29273f84077363296657176ea39c3545521720
   ExpoModulesCore: dd965804a882f1dbb6036fceea4d912461aeaa0d
   ExpoSystemUI: fb8213e39d19e0861320fa69eb60cad7a839c080

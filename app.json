@@ -1,8 +1,8 @@
 {
   "android": {
-    "package": "com.dudu911.questigo"
+    "package": "com.dudu911.withreactnativeweb"
   },
   "ios": {
-    "bundleIdentifier": "com.dudu911.questigo"
+    "bundleIdentifier": "com.dudu911.withreactnativeweb"
   }
 }

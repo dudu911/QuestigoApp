@@ -27,7 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.turbo.example</string>
+          <string>questigo</string>
           <string>com.dudu911.questigo</string>
         </array>
       </dict>

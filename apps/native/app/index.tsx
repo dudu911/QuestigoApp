@@ -40,7 +40,7 @@ export default function Native() {
         </StyledText>
         <Link href="/(shell)/home" asChild>
           <StyledButton style={{ backgroundColor: "#F49C00" }}>
-            Enter Game World
+            <StyledText>Enter Game World</StyledText>
           </StyledButton>
         </Link>
         <ProvidersDemo />

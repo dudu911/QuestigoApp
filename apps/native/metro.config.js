@@ -1,64 +1,30 @@
-// Learn more https://docs.expo.io/guides/customizing-metro
+// apps/native/metro.config.js
 const { getDefaultConfig } = require("expo/metro-config");
 const path = require("path");
 
-// Find the workspace root, this can be replaced with `find-yarn-workspace-root`
-const workspaceRoot = path.resolve(__dirname, "../..");
 const projectRoot = __dirname;
+const workspaceRoot = path.resolve(projectRoot, "../..");
 
+// Get Expo's default Metro config
 const config = getDefaultConfig(projectRoot);
 
-// 1. Watch all files within the monorepo
+// Ensure monorepo watch + resolution
 config.watchFolders = [workspaceRoot];
-
-// 2. Let Metro know where to resolve packages, and in what order
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
   path.resolve(workspaceRoot, "node_modules"),
 ];
 
-// 3. Force Metro to resolve (sub)dependencies only from the `nodeModulesPaths`
-config.resolver.disableHierarchicalLookup = true;
-
-// 4. Enable symlink resolution for pnpm workspace packages
-config.resolver.resolverMainFields = ["react-native", "browser", "main"];
-config.resolver.platforms = ["ios", "android", "native", "web"];
-
-// 5. Prevent duplicate react/react-native by ensuring single resolution
+// Critical: make sure React & React Native are singletons
 config.resolver.alias = {
   react: path.resolve(workspaceRoot, "node_modules/react"),
   "react-native": path.resolve(workspaceRoot, "node_modules/react-native"),
-  "expo-modules-core": path.resolve(
-    workspaceRoot,
-    "node_modules/expo-modules-core",
-  ),
-  "react-native-reanimated": path.resolve(
-    workspaceRoot,
-    "node_modules/react-native-reanimated",
-  ),
+  "react-i18next": path.resolve(workspaceRoot, "node_modules/react-i18next"),
 };
 
-// 6. Add asset resolution for pnpm workspace structure
-config.resolver.assetExts = [
-  ...config.resolver.assetExts,
-  "png",
-  "jpg",
-  "jpeg",
-  "gif",
-  "svg",
-];
-
-// 7. Add watch folders to include react-native assets from pnpm structure
-config.watchFolders = [
-  workspaceRoot,
-  path.resolve(workspaceRoot, "node_modules"),
-  path.resolve(workspaceRoot, "node_modules/.pnpm"),
-];
-
-// 8. Add platform-specific resolution to block native modules on web
+// ⬇️ Custom resolver to block native-only modules on web
 const originalResolveRequest = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  // Block react-native-maps and related native modules on web platform
   if (
     platform === "web" &&
     (moduleName === "react-native-maps" ||
@@ -66,18 +32,12 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       moduleName.includes("codegenNativeCommands") ||
       moduleName.includes("codegenNativeComponent"))
   ) {
-    // Return a mock module path that doesn't exist to prevent bundling
-    return {
-      type: "empty",
-    };
+    return { type: "empty" }; // prevent bundling crash
   }
 
-  // Use original resolver for other cases
-  if (originalResolveRequest) {
-    return originalResolveRequest(context, moduleName, platform);
-  }
-
-  return context.resolveRequest(context, moduleName, platform);
+  return originalResolveRequest
+    ? originalResolveRequest(context, moduleName, platform)
+    : context.resolveRequest(context, moduleName, platform);
 };
 
 module.exports = config;

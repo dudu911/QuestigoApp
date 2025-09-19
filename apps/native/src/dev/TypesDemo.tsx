@@ -52,14 +52,14 @@ export function TypesDemo() {
           onPress={() => validateUser(validUserData)}
           style={{ marginBottom: theme.spacing.sm }}
         >
-          Validate Good Data
+          <StyledText>Validate Good Data</StyledText>
         </StyledButton>
 
         <StyledButton
           variant="secondary"
           onPress={() => validateUser(invalidUserData)}
         >
-          Validate Bad Data
+          <StyledText>Validate Bad Data</StyledText>
         </StyledButton>
       </StyledView>
 

@@ -51,11 +51,11 @@ Note: Set EXPO_PUBLIC_API_URL and EXPO_PUBLIC_MAPS_KEY in .env file`);
           onPress={checkConfig}
           style={{ marginBottom: theme.spacing.sm }}
         >
-          Validate Config
+          <StyledText>Validate Config</StyledText>
         </StyledButton>
 
         <StyledButton variant="secondary" onPress={showEnvVars}>
-          Show Environment
+          <StyledText>Show Environment</StyledText>
         </StyledButton>
       </StyledView>
 

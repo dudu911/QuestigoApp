@@ -4,11 +4,11 @@ const config: ExpoConfig = {
   name: "Questigo",
   slug: "questigo",
   version: "1.0.0",
-  scheme: "com.turbo.example",
+  scheme: "questigo",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
-  newArchEnabled: true,
+  newArchEnabled: false, // Disable New Architecture temporarily
   splash: {
     image: "./assets/splash.png",
     resizeMode: "contain",
@@ -18,19 +18,22 @@ const config: ExpoConfig = {
     fallbackToCacheTimeout: 0,
   },
   assetBundlePatterns: ["**/*"],
+  platforms: ["ios", "android", "web"],
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.dudu911.questigo",
+    jsEngine: "jsc", // Disable Hermes temporarily
     config: {
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS,
     },
   },
   android: {
+    package: "com.dudu911.questigo",
+    jsEngine: "jsc", // Disable Hermes temporarily
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: "#FFFFFF",
     },
-    package: "com.dudu911.questigo",
     config: {
       googleMaps: {
         apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID,
@@ -43,15 +46,23 @@ const config: ExpoConfig = {
   },
   plugins: [
     "expo-router",
+    "expo-location",
     [
       "expo-build-properties",
       {
         android: {
-          // Use Kotlin 1.9.25 to match what expo-modules-core expects
-          // and disable Compose compiler version compatibility check
-          kotlinVersion: "1.9.25",
+          kotlinVersion: "2.0.21",
           proguardMinifyEnabled: false,
           enableProguardInReleaseBuilds: false,
+          enableHermes: false,
+          // Disable New Architecture
+          newArchEnabled: false,
+        },
+        ios: {
+          deploymentTarget: "15.1",
+          enableHermes: false,
+          // Disable New Architecture
+          newArchEnabled: false,
         },
       },
     ],
@@ -62,4 +73,5 @@ const config: ExpoConfig = {
     },
   },
 };
+
 export default config;

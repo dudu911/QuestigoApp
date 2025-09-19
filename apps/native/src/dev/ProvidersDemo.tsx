@@ -88,7 +88,9 @@ export function ProvidersDemo() {
           onPress={toggleLanguage}
           style={{ marginBottom: theme.spacing.sm }}
         >
-          Switch to {locale === "en" ? "עברית" : "English"}
+          <StyledText>
+            Switch to {locale === "en" ? "עברית" : "English"}
+          </StyledText>
         </StyledButton>
 
         <StyledButton
@@ -96,7 +98,10 @@ export function ProvidersDemo() {
           onPress={simulateQuest}
           style={{ marginBottom: theme.spacing.sm }}
         >
-          {activeQuestId ? "Finish Quest" : "Start Quest"}
+          <StyledText>
+            {" "}
+            {activeQuestId ? "Finish Quest" : "Start Quest"}
+          </StyledText>
         </StyledButton>
 
         <StyledButton
@@ -104,7 +109,7 @@ export function ProvidersDemo() {
           onPress={simulateTeam}
           style={{ marginBottom: theme.spacing.sm }}
         >
-          {teamCode ? "Leave Team" : "Join Team"}
+          <StyledText>{teamCode ? "Leave Team" : "Join Team"}</StyledText>
         </StyledButton>
 
         <StyledButton
@@ -113,7 +118,9 @@ export function ProvidersDemo() {
             dispatch({ type: "auth/setIsOnline", payload: !isOnline })
           }
         >
-          Toggle Network: {isOnline ? "Go Offline" : "Go Online"}
+          <StyledText>
+            Toggle Network: {isOnline ? "Go Offline" : "Go Online"}
+          </StyledText>
         </StyledButton>
       </StyledView>
 
